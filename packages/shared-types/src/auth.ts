@@ -37,6 +37,11 @@ export type MeResponse = {
 	donorCode: string | null
 	isSuperAdmin: boolean
 	facilities: { id: string; name: string }[]
+	/** Registered until a facility records a blood type, then Verified. */
+	donorStatus: 'registered' | 'verified'
+	bloodType: string | null
+	/** "Likely eligible": the facility's screening on the day has the final say. */
+	eligibility: import('./eligibility').Eligibility
 }
 
 export const verifyEmailInput = z.object({ token: z.string().min(20).max(100) })
@@ -45,3 +50,27 @@ export const phoneSendInput = z.object({ phone: phoneField.optional() })
 export const forgotInput = z.object({ email: z.string().trim().toLowerCase().email('Enter a valid email') })
 export const resetInput = z.object({ token: z.string().min(20).max(100), password: passwordField })
 export const changePasswordInput = z.object({ currentPassword: z.string().min(1).max(200), newPassword: passwordField })
+
+export const BLOOD_TYPES = ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+'] as const
+export type BloodType = (typeof BLOOD_TYPES)[number]
+export const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const
+
+export const donationRequestInput = z.object({
+	kind: z.enum(['test', 'donate']),
+	facilityId: z.string().length(26, 'Choose a facility'),
+	days: z.array(z.enum(WEEKDAYS)).min(1, 'Choose at least one day').max(7),
+	timeOfDay: z.enum(['morning', 'afternoon', 'any']),
+})
+export type DonationRequestInput = z.infer<typeof donationRequestInput>
+
+export type DonationRequestView = {
+	id: string
+	kind: 'test' | 'donate'
+	facilityId: string
+	facilityName: string
+	days: string[]
+	timeOfDay: 'morning' | 'afternoon' | 'any'
+	status: 'requested' | 'scheduled' | 'completed' | 'cancelled' | 'no_show'
+	scheduledAt: string | null
+	createdAt: string
+}

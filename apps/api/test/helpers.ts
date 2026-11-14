@@ -38,7 +38,7 @@ export async function json<T = any>(res: Response): Promise<T> {
 /** Empties the tables phase 1 uses. TRUNCATE skips the audit log's delete guard on purpose. */
 export async function resetAccounts({ db }: TestApp) {
 	await db.execute(sql`SET FOREIGN_KEY_CHECKS = 0`)
-	for (const t of ['auth_tokens', 'phone_otps', 'users', 'user_extra_facilities', 'facility_requests', 'refresh_tokens', 'rate_limits', 'facilities']) await db.execute(sql.raw(`TRUNCATE TABLE \`${t}\``))
+	for (const t of ['donation_requests', 'auth_tokens', 'phone_otps', 'users', 'user_extra_facilities', 'facility_requests', 'refresh_tokens', 'rate_limits', 'facilities']) await db.execute(sql.raw(`TRUNCATE TABLE \`${t}\``))
 	await db.execute(sql`SET FOREIGN_KEY_CHECKS = 1`)
 }
 
@@ -92,3 +92,10 @@ export function smsCode(t: TestApp): string {
 	if (!code) throw new Error('no sms code found')
 	return code
 }
+
+/** Sets facts a medical facility will record later (blood type, weight, last donation), and phone verification, straight in the database. */
+export async function setDonorFacts(t: TestApp, email: string, facts: Record<string, unknown>) {
+	const sets = Object.keys(facts).map((k) => `\`${k}\` = ?`).join(', ')
+	await t.pool.query(`update users set ${sets} where email = ?`, [...Object.values(facts), email])
+}
+export const verifyPhone = (t: TestApp, email: string) => setDonorFacts(t, email, { phone_verified_at: new Date('2026-11-14T07:00:00Z') })

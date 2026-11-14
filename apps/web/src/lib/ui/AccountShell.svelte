@@ -16,7 +16,7 @@
 	const all = [
 		{ key: 'home', label: 'Dashboard', href: '/dashboard', icon: 'home', tab: 'Home', minorOk: true },
 		{ key: 'calls', label: 'Calls for you', icon: 'heart', tab: 'Calls' },
-		{ key: 'donate', label: 'Donate or get tested', icon: 'drop', tab: 'Donate' },
+		{ key: 'donate', label: 'Donate or get tested', href: '/donate', icon: 'drop', tab: 'Donate' },
 		{ key: 'visits', label: 'Appointments', icon: 'calendar', tab: 'Visits' },
 		{ key: 'alerts', label: 'Alerts', icon: 'bell', tab: '' },
 		{ key: 'reminders', label: 'Reminders', icon: 'clock', tab: '' },

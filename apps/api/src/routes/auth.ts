@@ -85,7 +85,7 @@ authRoutes.post('/signup', async (c) => {
 	const user = (await findUserById(db, id))!
 	await startVerification(c.var, user, now)
 	const session = await issueSession(db, config.jwtSecret, user, now, { userAgent: c.req.header('User-Agent') })
-	return c.json({ ...session, user: await toMe(db, user, adult) }, 201)
+	return c.json({ ...session, user: await toMe(db, user, now) }, 201)
 })
 
 authRoutes.post('/login', async (c) => {
@@ -108,7 +108,7 @@ authRoutes.post('/login', async (c) => {
 	await reset(db, key)
 	await touchLogin(db, user.id, now)
 	const session = await issueSession(db, config.jwtSecret, user, now, { userAgent: c.req.header('User-Agent') })
-	return c.json({ ...session, user: await toMe(db, user, !!user.donorCode) })
+	return c.json({ ...session, user: await toMe(db, user, now) })
 })
 
 authRoutes.post('/refresh', async (c) => {

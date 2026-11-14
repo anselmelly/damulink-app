@@ -35,5 +35,6 @@ html {
 	.badge-soft { @apply bg-rose-100 text-red-700; }
 	.card { @apply rounded-2xl border-[1.5px] border-rose-200 bg-white; }
 	.seg-box { @apply flex h-[52px] cursor-pointer items-center justify-center rounded-xl border-[1.5px] border-field bg-white text-base font-semibold text-ink peer-checked:border-rose-600 peer-checked:bg-rose-50 peer-checked:text-red-700 peer-focus-visible:ring-4 peer-focus-visible:ring-pink-300; }
+	.choice-card { @apply flex cursor-pointer items-start gap-4 rounded-2xl border-[1.5px] border-field bg-white p-5 peer-checked:border-rose-600 peer-checked:bg-rose-50 peer-focus-visible:ring-4 peer-focus-visible:ring-pink-300; }
 	.eyebrow { @apply text-sm font-bold uppercase tracking-[.14em] text-rose-600; }
 }

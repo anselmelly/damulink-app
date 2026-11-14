@@ -1,4 +1,4 @@
-import { mysqlTable, varchar, text, datetime, bigint, json, index, int, boolean, date, mysqlEnum, uniqueIndex } from 'drizzle-orm/mysql-core'
+import { mysqlTable, varchar, text, datetime, bigint, json, index, int, boolean, date, decimal, mysqlEnum, uniqueIndex } from 'drizzle-orm/mysql-core'
 
 /** One row per tunable value (alert limits, request limits...). Seeded by the app, edited by the super admin. */
 export const settings = mysqlTable('settings', {
@@ -55,6 +55,10 @@ export const users = mysqlTable(
 		homeFacilityId: varchar('home_facility_id', { length: 26 }),
 		unlistedFacilityName: varchar('unlisted_facility_name', { length: 150 }),
 		smsOptIn: boolean('sms_opt_in').notNull().default(false),
+		// recorded by a medical facility (never by the donor): a blood type makes a donor Verified
+		bloodType: mysqlEnum('blood_type', ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+']),
+		weightKg: decimal('weight_kg', { precision: 4, scale: 1, mode: 'number' }),
+		lastDonationOn: date('last_donation_on', { mode: 'string' }),
 		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
 		lastLoginAt: datetime('last_login_at', { fsp: 3 }),
 	},
@@ -130,4 +134,23 @@ export const phoneOtps = mysqlTable(
 		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
 	},
 	(t) => [index('phone_otps_user_idx').on(t.userId, t.createdAt)],
+)
+
+// ---------- phase 2a: asking to donate or get tested ----------
+/** A donor asks a facility for a blood type test or a donation; the facility approves and sets a date. */
+export const donationRequests = mysqlTable(
+	'donation_requests',
+	{
+		id: varchar('id', { length: 26 }).primaryKey(),
+		userId: varchar('user_id', { length: 26 }).notNull(),
+		facilityId: varchar('facility_id', { length: 26 }).notNull(),
+		kind: mysqlEnum('kind', ['test', 'donate']).notNull(),
+		days: varchar('days', { length: 27 }).notNull(), // 'mon,wed,fri'
+		timeOfDay: mysqlEnum('time_of_day', ['morning', 'afternoon', 'any']).notNull(),
+		status: mysqlEnum('status', ['requested', 'scheduled', 'completed', 'cancelled', 'no_show']).notNull().default('requested'),
+		scheduledAt: datetime('scheduled_at', { fsp: 3 }),
+		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
+		updatedAt: datetime('updated_at', { fsp: 3 }).notNull(),
+	},
+	(t) => [index('donation_requests_user_idx').on(t.userId, t.createdAt), index('donation_requests_facility_idx').on(t.facilityId, t.status)],
 )

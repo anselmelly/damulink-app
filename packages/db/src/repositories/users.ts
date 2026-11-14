@@ -44,3 +44,7 @@ export async function userFacilities(db: Db, u: Pick<User, 'id' | 'homeFacilityI
 	const rows = await db.select({ id: facilities.id, name: facilities.name }).from(facilities).where(and(inArray(facilities.id, ids)))
 	return ids.map((id) => rows.find((r) => r.id === id)).filter((r): r is { id: string; name: string } => !!r)
 }
+
+export async function setDonorCode(db: Db, userId: string, code: string): Promise<void> {
+	await db.update(users).set({ donorCode: code }).where(eq(users.id, userId))
+}
