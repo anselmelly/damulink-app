@@ -34,3 +34,14 @@ export function facilityDecisionMessage(to: string, facilityName: string, action
 	}
 	return { to, subject: lines[action][0], text: `${lines[action][1]}\n\n${link}` }
 }
+
+/** The invitation an admin sends to a colleague. */
+export function inviteMessage(to: string, facilityName: string, facilityCode: string, role: 'admin' | 'attendant', invitedBy: string, appUrl: string, token: string, accountExists: boolean): MailMessage {
+	const what = role === 'admin' ? 'an admin' : 'an attendant'
+	const how = accountExists ? 'You already have an account, so log in and accept the invitation.' : 'You will create a facility account (no donor details are needed).'
+	return {
+		to,
+		subject: `${invitedBy} invited you to ${facilityName} on ${BRAND.name}`,
+		text: `${invitedBy} invited you to join ${facilityName} on ${BRAND.name} as ${what}.\n\n${how}\n\n${appUrl}/join-facility?token=${token}\n\nWhen you log in, add the facility code ${facilityCode} to open the facility side. The link works for 14 days.`,
+	}
+}

@@ -23,7 +23,7 @@ export const signupInput = z.object({
 })
 export type SignupInput = z.infer<typeof signupInput>
 
-export const loginInput = z.object({ email: z.string().trim().toLowerCase().email(), password: z.string().min(1).max(200) })
+export const loginInput = z.object({ email: z.string().trim().toLowerCase().email(), password: z.string().min(1).max(200), facilityCode: z.string().trim().max(20).optional() })
 export const refreshInput = z.object({ refreshToken: z.string().min(20).max(200) })
 
 export type MeResponse = {
@@ -31,8 +31,8 @@ export type MeResponse = {
 	name: string
 	email: string
 	phone: string // masked
-	sex: 'female' | 'male'
-	dateOfBirth: string // YYYY-MM-DD, the donor's own
+	sex: 'female' | 'male' | null // empty for people who are not donors
+	dateOfBirth: string | null // YYYY-MM-DD, the donor's own
 	emailVerified: boolean
 	phoneVerified: boolean
 	canDonate: boolean

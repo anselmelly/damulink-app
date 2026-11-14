@@ -42,11 +42,13 @@ export const facilities = mysqlTable(
 		email: varchar('email', { length: 254 }),
 		/** What attendants type at login to open the facility side. */
 		facilityCode: varchar('facility_code', { length: 12 }),
+		/** The public invite link: /join/<slug>. Only verified facilities answer to it. */
+		slug: varchar('slug', { length: 80 }),
 		createdBy: varchar('created_by', { length: 26 }),
 		submittedAt: datetime('submitted_at', { fsp: 3 }),
 		verifiedAt: datetime('verified_at', { fsp: 3 }),
 	},
-	(t) => [index('facilities_name_idx').on(t.name), index('facilities_town_idx').on(t.town), uniqueIndex('facilities_code_uq').on(t.facilityCode), index('facilities_license_idx').on(t.licenseNumber), index('facilities_status_idx').on(t.status, t.submittedAt)],
+	(t) => [index('facilities_name_idx').on(t.name), index('facilities_town_idx').on(t.town), uniqueIndex('facilities_code_uq').on(t.facilityCode), uniqueIndex('facilities_slug_uq').on(t.slug), index('facilities_license_idx').on(t.licenseNumber), index('facilities_status_idx').on(t.status, t.submittedAt)],
 )
 
 export const users = mysqlTable(
@@ -62,8 +64,9 @@ export const users = mysqlTable(
 		status: mysqlEnum('status', ['active', 'suspended']).notNull().default('active'),
 		tokenVersion: int('token_version').notNull().default(0),
 		isSuperAdmin: boolean('is_super_admin').notNull().default(false),
-		sex: mysqlEnum('sex', ['female', 'male']).notNull(),
-		dateOfBirth: date('date_of_birth', { mode: 'string' }).notNull(),
+		// empty for people who run or work at a facility without being donors
+		sex: mysqlEnum('sex', ['female', 'male']),
+		dateOfBirth: date('date_of_birth', { mode: 'string' }),
 		donorCode: varchar('donor_code', { length: 12 }),
 		homeFacilityId: varchar('home_facility_id', { length: 26 }),
 		unlistedFacilityName: varchar('unlisted_facility_name', { length: 150 }),
@@ -216,4 +219,23 @@ export const facilityEvents = mysqlTable(
 		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
 	},
 	(t) => [index('facility_events_facility_idx').on(t.facilityId, t.createdAt)],
+)
+
+// ---------- phase 3b: inviting people to a facility ----------
+/** An admin invites someone by email. The link works once, for 14 days. */
+export const facilityInvites = mysqlTable(
+	'facility_invites',
+	{
+		id: varchar('id', { length: 26 }).primaryKey(),
+		facilityId: varchar('facility_id', { length: 26 }).notNull(),
+		email: varchar('email', { length: 254 }).notNull(),
+		role: mysqlEnum('role', ['admin', 'attendant']).notNull(),
+		tokenHash: varchar('token_hash', { length: 64 }).notNull(),
+		invitedBy: varchar('invited_by', { length: 26 }).notNull(),
+		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
+		expiresAt: datetime('expires_at', { fsp: 3 }).notNull(),
+		acceptedAt: datetime('accepted_at', { fsp: 3 }),
+		revokedAt: datetime('revoked_at', { fsp: 3 }),
+	},
+	(t) => [uniqueIndex('facility_invites_hash_uq').on(t.tokenHash), index('facility_invites_facility_idx').on(t.facilityId, t.email)],
 )

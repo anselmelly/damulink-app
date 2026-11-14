@@ -3,8 +3,8 @@ export type EligibilitySettings = { minAge: number; maxAge: number; minWeightKg:
 export const DEFAULT_ELIGIBILITY: EligibilitySettings = { minAge: 18, maxAge: 65, minWeightKg: 50, waitingMonthsMale: 3, waitingMonthsFemale: 4 }
 
 export type Eligibility = {
-	/** `eligible`: likely able to donate today. `waiting`: gave recently. `too_young` / `too_old`: outside the age range. */
-	status: 'eligible' | 'waiting' | 'too_young' | 'too_old'
+	/** `eligible`: likely able to donate today. `waiting`: gave recently. `too_young` / `too_old`: outside the age range. `not_a_donor`: no donor details on the account (a facility person). */
+	status: 'eligible' | 'waiting' | 'too_young' | 'too_old' | 'not_a_donor'
 	/** For `waiting` the day they can donate again; for `too_young` the day they turn the minimum age. */
 	eligibleOn?: string
 	/** A recorded weight under the limit only warns: the facility decides on the day. */

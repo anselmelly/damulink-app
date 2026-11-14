@@ -58,10 +58,26 @@ class Auth {
 		this.set(r, r.user)
 		this.ready = true
 	}
-	async login(email: string, password: string) {
-		const r = await apiFetch<Tokens & { user: MeResponse }>('/auth/login', { body: { email, password } })
+	/** Logs in. With a facility code the answer names the facility to open; without one it is `null` (the donor account). */
+	async login(email: string, password: string, facilityCode?: string): Promise<{ id: string; name: string; status: string; role: 'admin' | 'attendant' } | null> {
+		const r = await apiFetch<Tokens & { user: MeResponse; facility: { id: string; name: string; status: string; role: 'admin' | 'attendant' } | null }>('/auth/login', { body: { email, password, facilityCode: facilityCode?.trim() || undefined } })
 		this.set(r, r.user)
 		this.ready = true
+		return r.facility
+	}
+	/** Registers a facility (a person who is not a donor, and the first facts about their facility). */
+	async registerFacility(input: Record<string, unknown>) {
+		const r = await apiFetch<Tokens & { user: MeResponse; facility: { id: string } }>('/auth/register-facility', { body: input })
+		this.set(r, r.user)
+		this.ready = true
+		return r.facility
+	}
+	/** A new person joining a facility from an invitation. */
+	async joinFacility(token: string, input: Record<string, unknown>) {
+		const r = await apiFetch<Tokens & { user: MeResponse; facility: { id: string } }>(`/invites/${token}/join`, { body: input })
+		this.set(r, r.user)
+		this.ready = true
+		return r.facility
 	}
 	async logout() {
 		const rt = this.tokens?.refreshToken
@@ -81,6 +97,11 @@ class Auth {
 	/** Saves a change to the profile and keeps the shown user in step. */
 	async patchProfile(changes: Record<string, unknown>) {
 		this.user = await this.call<MeResponse>('/me', { method: 'PATCH', body: changes })
+	}
+	/** Where this person's work is: people with no donor details go to their one facility, everyone else to the dashboard. */
+	homePath(): string {
+		const u = this.user
+		return u && !u.canDonate && u.managedFacilities.length === 1 ? `/facility/${u.managedFacilities[0].id}` : '/dashboard'
 	}
 	/** Re-reads /me (after verifying a phone or email, for example). */
 	async reload() {

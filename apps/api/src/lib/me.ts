@@ -20,7 +20,7 @@ export async function toMe(db: Db, u: User, now: Date): Promise<MeResponse> {
 		managedFacilities: await managedFacilities(db, u.id),
 		donorStatus: u.bloodType ? 'verified' : 'registered',
 		bloodType: u.bloodType,
-		eligibility: checkEligibility({ sex: u.sex, dateOfBirth: u.dateOfBirth, today: now.toISOString().slice(0, 10), lastDonationOn: u.lastDonationOn, weightKg: u.weightKg, settings: await getEligibilitySettings(db) }),
+		eligibility: u.sex && u.dateOfBirth ? checkEligibility({ sex: u.sex, dateOfBirth: u.dateOfBirth, today: now.toISOString().slice(0, 10), lastDonationOn: u.lastDonationOn, weightKg: u.weightKg, settings: await getEligibilitySettings(db) }) : { status: 'not_a_donor' },
 	}
 }
 

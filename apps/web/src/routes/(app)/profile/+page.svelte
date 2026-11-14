@@ -19,9 +19,9 @@
 	// svelte-ignore state_referenced_locally
 	let email = $state(auth.user!.email)
 	// svelte-ignore state_referenced_locally
-	let sex = $state<'female' | 'male'>(auth.user!.sex)
+	let sex = $state<'female' | 'male' | ''>(auth.user!.sex ?? '')
 	// svelte-ignore state_referenced_locally
-	let dob = $state(auth.user!.dateOfBirth)
+	let dob = $state(auth.user!.dateOfBirth ?? '')
 	let dobTouched = $state(false)
 	let detailsSaved = $state(false)
 	let detailsErrors = $state<Record<string, string>>({})
@@ -76,7 +76,7 @@
 		const changes: Record<string, unknown> = {}
 		if (name.trim() !== user.name) changes.name = name.trim()
 		if (email.trim().toLowerCase() !== user.email) changes.email = email.trim()
-		if (sex !== user.sex) changes.sex = sex
+		if (sex && sex !== user.sex) changes.sex = sex
 		if (dobTouched) {
 			if (!dob) return void (detailsErrors = { dateOfBirth: 'Enter a real date, like 14 March 1995' })
 			changes.dateOfBirth = dob
@@ -190,7 +190,7 @@
 					<label><input type="radio" name="sex" value="male" bind:group={sex} class="peer sr-only" /><span class="seg-box">Male</span></label>
 				</div>
 			</fieldset>
-			<DobInput bind:value={dob} bind:touched={dobTouched} initial={user.dateOfBirth} error={detailsErrors.dateOfBirth} />
+			<DobInput bind:value={dob} bind:touched={dobTouched} initial={user.dateOfBirth ?? ''} error={detailsErrors.dateOfBirth} />
 		</div>
 		<p class="text-[13px] leading-[18px] text-muted">Sex and date of birth decide your waiting time and age check. Blood type, weight, and last donation are recorded by medical facilities and cannot be edited here.</p>
 		<button type="submit" class="btn-primary sm:!w-auto sm:self-start sm:px-10" disabled={detailsBusy}>{detailsBusy ? 'Saving…' : 'Save profile'}</button>

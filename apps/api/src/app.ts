@@ -10,6 +10,8 @@ import { requestId } from './middleware/request-id'
 import { authRoutes } from './routes/auth'
 import { adminRoutes } from './routes/admin'
 import { facilityRoutes } from './routes/facilities'
+import { facilitySignupRoutes } from './routes/facility-signup'
+import { inviteRoutes } from './routes/invites'
 import { myFacilityRoutes } from './routes/my-facilities'
 import { meRoutes } from './routes/me'
 import { verificationRoutes } from './routes/verification'
@@ -41,6 +43,8 @@ export function createApp(deps: AppDeps) {
 	})
 	app.route('/api/auth', authRoutes)
 	app.route('/api/auth', verificationRoutes)
+	app.route('/api/auth', facilitySignupRoutes)
+	app.route('/api/invites', inviteRoutes)
 	app.route('/api/me', meRoutes as unknown as Hono<AppEnv>)
 	app.route('/api/facilities', facilityRoutes)
 	app.route('/api/my-facilities', myFacilityRoutes)

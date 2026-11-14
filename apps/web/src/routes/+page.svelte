@@ -85,7 +85,7 @@
 				<h2 class="text-[30px] font-extrabold leading-9 tracking-tight md:text-[40px] md:leading-[46px]">Run a medical facility or blood bank?</h2>
 				<p class="mt-3 max-w-2xl text-lg leading-7">Add your facility. After a quick manual check, you can publish calls, alert nearby donors, and schedule the ones who say YES.</p>
 			</div>
-			<a href="/create-account" class="btn-light shrink-0">Add your facility</a>
+			<a href="/register-facility" class="btn-light shrink-0">Add your facility</a>
 		</div>
 	</section>
 

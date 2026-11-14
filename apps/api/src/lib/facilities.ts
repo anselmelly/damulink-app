@@ -1,4 +1,4 @@
-import { facilityCodeExists, listFacilityEvents, listMemberFacilities, type Db, type Facility, type FacilityEvent } from '@damu/db'
+import { facilityCodeExists, listFacilityEvents, slugExists, listMemberFacilities, type Db, type Facility, type FacilityEvent } from '@damu/db'
 import { newFacilityCode, type FacilityEventView, type MyFacilityView } from '@damu/shared-types'
 
 export async function uniqueFacilityCode(db: Db): Promise<string> {
@@ -21,6 +21,7 @@ export async function myFacilityView(db: Db, f: Facility, role: 'admin' | 'atten
 		status: f.status,
 		role,
 		facilityCode: f.facilityCode,
+		slug: f.slug,
 		licenseNumber: f.licenseNumber,
 		owner: f.owner,
 		address: f.address,
@@ -35,4 +36,12 @@ export async function myFacilityView(db: Db, f: Facility, role: 'admin' | 'atten
 
 export async function managedFacilities(db: Db, userId: string) {
 	return (await listMemberFacilities(db, userId)).map(({ f, role }) => ({ id: f.id, name: f.name, status: f.status, role }))
+}
+
+/** "Rift County Hospital" + "Nakuru" -> rift-county-hospital-nakuru; a second one with the same name gets a short suffix. */
+export async function uniqueSlug(db: Db, name: string, town: string): Promise<string> {
+	const base = `${name} ${town}`.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 70) || 'facility'
+	let slug = base
+	while (await slugExists(db, slug)) slug = `${base}-${Math.random().toString(36).slice(2, 6)}`
+	return slug
 }

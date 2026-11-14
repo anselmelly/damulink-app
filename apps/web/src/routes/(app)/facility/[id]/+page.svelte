@@ -5,7 +5,7 @@
 	import { ApiError } from '$lib/api'
 	import { BRAND } from '$lib/brand'
 	import { longDate, nairobiDateTime } from '$lib/dates'
-	import AccountShell from '$lib/ui/AccountShell.svelte'
+	import FacilityShell from '$lib/ui/FacilityShell.svelte'
 	import Icon from '$lib/ui/Icon.svelte'
 	import type { MyFacilityView } from '@damu/shared-types'
 
@@ -66,7 +66,7 @@
 
 <svelte:head><title>{f?.name ?? 'Facility'} | {BRAND.name}</title></svelte:head>
 
-<AccountShell active={`facility-${id}`}>
+<FacilityShell {f} active="status">
 	{#if missing}
 		<div class="notice-error" role="alert"><Icon name="alert" class="mt-px h-[22px] w-[22px] text-red-700" /><p>We could not find this facility. <a href="/dashboard" class="link">Back to the dashboard</a></p></div>
 	{:else if f}
@@ -106,7 +106,17 @@
 			</ol>
 		</section>
 
-		{#if f.status === 'needs_info'}
+		{#if f.status === 'incomplete'}
+			<section class="card flex flex-col gap-4 p-6">
+				<h2 class="text-lg font-bold">What is left</h2>
+				<ol class="flex flex-col gap-3 text-[15px]">
+					{#each [[auth.user?.phoneVerified ?? false, 'Phone verified', 'Verify your phone with the code we texted.', '/verify-phone'], [auth.user?.emailVerified ?? false, 'Email verified', 'Open the link we emailed you.', '/verify-email'], [false, 'Complete the facility profile', 'Where it is, how to reach it, and the license number. The review starts after this.', `/facility/${f.id}/edit`]] as [done, t, d, href]}
+						<li class="flex items-center gap-3"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full {done ? 'bg-rose-600 text-white' : 'border-[1.5px] border-rose-200 text-sm font-extrabold'}">{#if done}<Icon name="check" class="h-4 w-4" />{:else}•{/if}</span><span><span class="block font-semibold">{t}</span><span class="text-[13px] text-muted">{d}</span>{#if !done}<a href={href as string} class="link ml-2 text-[13px]">Open</a>{/if}</span></li>
+					{/each}
+				</ol>
+				<a href="/facility/{f.id}/edit" class="btn-primary sm:!w-auto sm:self-start sm:px-8">Complete the facility profile</a>
+			</section>
+		{:else if f.status === 'needs_info'}
 			<section class="card flex flex-col gap-4 p-6">
 				<h2 class="text-lg font-bold">Message from the {BRAND.name} reviewer</h2>
 				<p class="rounded-xl bg-rose-50 p-4 text-[15px] leading-[22px]">{last('ask')?.text}</p>
@@ -129,7 +139,7 @@
 				<ul class="flex flex-col gap-2 text-[15px] leading-[22px]"><li>No new calls, drives, or SMS alerts.</li><li>Existing donor and request records stay safe.</li><li>If you think this is a mistake, contact {BRAND.name} support.</li></ul>
 			</section>
 		{:else if f.status === 'verified'}
-			<section class="card flex flex-col gap-2 p-6"><h2 class="text-lg font-bold">What is next</h2><p class="text-[15px] leading-[22px] text-muted">Adding attendants and raising requests are coming soon.</p></section>
+			<section class="card flex flex-col gap-3 p-6"><h2 class="text-lg font-bold">What is next</h2><p class="text-[15px] leading-[22px] text-muted">{f.role === 'admin' ? 'Add your attendants so they can work on requests and calls (raising requests and publishing calls are coming soon).' : 'Requests, calls and check-in are coming soon. An admin at your facility can add more people to the team.'}</p>{#if f.role === 'admin'}<div class="flex flex-col gap-3 sm:flex-row"><a href="/facility/{f.id}/attendants" class="btn-primary sm:!w-auto sm:px-8">Add your attendants</a><a href="/facility/{f.id}/profile" class="btn-secondary sm:!w-auto sm:px-8">Invite donors with a link</a></div>{/if}</section>
 		{/if}
 
 		{#if f.messages.length > 1 || (f.messages.length === 1 && f.status !== 'needs_info' && f.status !== 'rejected')}
@@ -145,4 +155,4 @@
 	{:else}
 		<p class="text-muted" role="status">Loading…</p>
 	{/if}
-</AccountShell>
+</FacilityShell>

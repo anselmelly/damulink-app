@@ -38,7 +38,7 @@ export async function json<T = any>(res: Response): Promise<T> {
 /** Empties the tables phase 1 uses. TRUNCATE skips the audit log's delete guard on purpose. */
 export async function resetAccounts({ db }: TestApp) {
 	await db.execute(sql`SET FOREIGN_KEY_CHECKS = 0`)
-	for (const t of ['audit_log', 'facility_events', 'facility_members', 'donor_prefs', 'donation_requests', 'auth_tokens', 'phone_otps', 'users', 'user_extra_facilities', 'facility_requests', 'refresh_tokens', 'rate_limits', 'facilities']) await db.execute(sql.raw(`TRUNCATE TABLE \`${t}\``))
+	for (const t of ['facility_invites', 'audit_log', 'facility_events', 'facility_members', 'donor_prefs', 'donation_requests', 'auth_tokens', 'phone_otps', 'users', 'user_extra_facilities', 'facility_requests', 'refresh_tokens', 'rate_limits', 'facilities']) await db.execute(sql.raw(`TRUNCATE TABLE \`${t}\``))
 	await db.execute(sql`SET FOREIGN_KEY_CHECKS = 1`)
 }
 
@@ -130,4 +130,19 @@ export async function admin(t: TestApp) {
 	const s = await signup(t)
 	await makeSuperAdmin(t, s.input.email)
 	return s
+}
+
+export const decideAs = (t: TestApp, token: string, id: string, body: unknown) => post(t, `/api/admin/facilities/${id}/decision`, body, auth(token))
+/** A facility that a super admin has approved, with its admin (the applicant). */
+export async function verifiedFacility(t: TestApp, facility: Record<string, unknown> = {}) {
+	const owner = await applicant(t, facility)
+	const ad = await admin(t)
+	await decideAs(t, ad.body.accessToken, owner.facility.id, { action: 'approve' })
+	return { owner, ad, id: owner.facility.id as string, code: owner.facility.facilityCode as string }
+}
+/** Invites `email` to the facility and returns the raw invite token from the email. */
+export async function invite(t: TestApp, adminToken: string, facilityId: string, email: string, role: 'attendant' | 'admin' = 'attendant') {
+	t.mail.sent.length = 0
+	const res = await post(t, `/api/my-facilities/${facilityId}/attendants`, { email, role }, auth(adminToken))
+	return { res, token: res.status === 201 || res.status === 200 ? emailToken(t, email) : '' }
 }

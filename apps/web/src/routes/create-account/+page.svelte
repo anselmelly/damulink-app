@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
 	import { onMount } from 'svelte'
+	import { page } from '$app/state'
 	import { auth } from '$lib/auth.svelte'
 	import { ApiError, apiFetch } from '$lib/api'
 	import { BRAND } from '$lib/brand'
@@ -34,6 +35,9 @@
 	onMount(async () => {
 		try {
 			facilities = await apiFetch<Facility[]>('/facilities')
+			// arriving from a facility's invite link: that facility is already the home facility
+			const wanted = page.url.searchParams.get('facility')
+			if (wanted && facilities.some((f) => f.id === wanted)) homeFacilityId = wanted
 		} catch {
 			/* the list is optional: "My facility is not listed" still works */
 		}

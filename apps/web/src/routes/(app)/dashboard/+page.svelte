@@ -79,7 +79,16 @@
 	{/if}
 	{#if cancelError}<div class="notice-error" role="alert"><Icon name="alert" class="mt-px h-[22px] w-[22px] text-red-700" /><p>{cancelError}</p></div>{/if}
 
-	{#if !user.canDonate}
+	{#if !user.dateOfBirth}
+		<section class="card flex items-start gap-4 p-6 md:p-8">
+			<span class="path-icon h-14 w-14"><Icon name="drop" class="h-7 w-7" /></span>
+			<div class="flex flex-col gap-1.5">
+				<h2 class="text-[22px] font-extrabold leading-7 tracking-tight">Want to donate blood too?</h2>
+				<p class="max-w-lg text-[15px] leading-[22px] text-muted">Your account has no donor details yet. Add your sex and date of birth in your profile and you can ask a facility for a test or donation.</p>
+				<a href="/profile" class="btn-secondary !h-11 mt-2 sm:!w-auto sm:self-start sm:px-6">Add donor details</a>
+			</div>
+		</section>
+	{:else if !user.canDonate}
 		<section class="card flex items-start gap-4 p-6 md:p-8">
 			<span class="path-icon h-14 w-14"><Icon name="drop" class="h-7 w-7" /></span>
 			<div class="flex flex-col gap-1.5">

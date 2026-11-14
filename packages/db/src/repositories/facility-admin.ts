@@ -11,11 +11,11 @@ export async function facilityCodeExists(db: Db, code: string): Promise<boolean>
 }
 
 /** Creates the facility, makes the applicant its admin and records "submitted", all or nothing. */
-export async function createFacility(db: Db, f: typeof facilities.$inferInsert, member: { userId: string; roleTitle: string }, event: typeof facilityEvents.$inferInsert): Promise<void> {
+export async function createFacility(db: Db, f: typeof facilities.$inferInsert, member: { userId: string; roleTitle: string; at: Date }, event: typeof facilityEvents.$inferInsert | null): Promise<void> {
 	await db.transaction(async (tx) => {
 		await tx.insert(facilities).values(f)
-		await tx.insert(facilityMembers).values({ facilityId: f.id, userId: member.userId, role: 'admin', roleTitle: member.roleTitle, createdAt: event.createdAt })
-		await tx.insert(facilityEvents).values(event)
+		await tx.insert(facilityMembers).values({ facilityId: f.id, userId: member.userId, role: 'admin', roleTitle: member.roleTitle || null, createdAt: member.at })
+		if (event) await tx.insert(facilityEvents).values(event)
 	})
 }
 

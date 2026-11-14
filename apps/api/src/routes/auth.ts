@@ -7,6 +7,8 @@ import {
 	findUserByEmail,
 	findUserById,
 	findUserByPhone,
+	getFacilityByCode,
+	getMembership,
 	hit,
 	markRefreshUsed,
 	peek,
@@ -97,16 +99,24 @@ authRoutes.post('/login', async (c) => {
 	const user = await findUserByEmail(db, input.email)
 	dummyHash ??= hashPassword('not-a-real-password', config.pbkdf2Iterations)
 	const ok = await verifyPassword(input.password, user ? user.passwordHash : await dummyHash)
-	if (!user || !ok) {
+	// A facility code opens the facility side. A code that is wrong, or not yours, fails exactly like a wrong password.
+	let facility: { id: string; name: string; status: string; role: 'admin' | 'attendant' } | null = null
+	const wantsFacility = !!input.facilityCode?.trim()
+	if (wantsFacility && user && ok) {
+		const f = await getFacilityByCode(db, input.facilityCode!.trim().toUpperCase())
+		const m = f ? await getMembership(db, f.id, user.id) : undefined
+		if (f && m) facility = { id: f.id, name: f.name, status: f.status, role: m.role }
+	}
+	if (!user || !ok || (wantsFacility && !facility)) {
 		await hit(db, key, LOGIN_WINDOW_MS, now)
-		throw new ApiError(401, 'invalid_credentials', 'Email or password is not right.')
+		throw new ApiError(401, 'invalid_credentials', 'Email, password or facility code is not right.')
 	}
 	if (user.status !== 'active') throw new ApiError(403, 'suspended', 'This account is suspended.')
 
 	await reset(db, key)
 	await touchLogin(db, user.id, now)
 	const session = await issueSession(db, config.jwtSecret, user, now, { userAgent: c.req.header('User-Agent') })
-	return c.json({ ...session, user: await toMe(db, user, now) })
+	return c.json({ ...session, user: await toMe(db, user, now), facility })
 })
 
 authRoutes.post('/refresh', async (c) => {

@@ -245,7 +245,7 @@ async function reminderView(c: { var: AuthEnv['Variables'] }): Promise<ReminderP
 		daysBefore: p?.reminderDaysBefore ?? 3,
 		cycleMonths: p?.reminderCycleMonths ?? null,
 		appointmentReminders: p?.appointmentReminders ?? true,
-		minMonths: user.sex === 'male' ? e.waitingMonthsMale : e.waitingMonthsFemale,
+		minMonths: user.sex === 'male' ? e.waitingMonthsMale : e.waitingMonthsFemale // no sex on file: the longer wait,
 	}
 }
 meRoutes.get('/reminders', async (c) => c.json(await reminderView(c)))

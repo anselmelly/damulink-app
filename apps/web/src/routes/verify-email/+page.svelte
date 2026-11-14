@@ -52,7 +52,7 @@
 				<h1 class="mt-2 text-[30px] font-extrabold leading-9 tracking-tight">Email verified</h1>
 				<p class="text-base leading-6 text-muted">Thank you. We will use this address for account notices and password resets.</p>
 			</div>
-			<a href="/dashboard" class="btn-primary mt-8">Continue</a>
+			<a href={auth.homePath()} class="btn-primary mt-8">Continue</a>
 		</div>
 	{:else if view === 'expired' || view === 'invalid'}
 		<div class="flex flex-col">
@@ -75,7 +75,7 @@
 				<Icon name="info" class="mt-px h-[22px] w-[22px] text-red-700" />
 				<p>You do not have to wait. You can keep using {BRAND.name} while your email is unverified.</p>
 			</div>
-			<a href="/dashboard" class="btn-primary mt-5">Continue</a>
+			<a href={auth.homePath()} class="btn-primary mt-5">Continue</a>
 			<button type="button" class="btn-secondary mt-3" onclick={resend} disabled={busy}>Resend the email</button>
 			{#if note}<p class="mt-4 text-center text-[15px] text-muted" role="status">{note}</p>{/if}
 		</div>

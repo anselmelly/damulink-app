@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { DONOR_CODE_ALPHABET } from './donor-code'
+import { normalizePhone } from './phone'
 
 export const FACILITY_TYPES = ['hospital', 'health centre', 'dispensary', 'clinic', 'blood bank'] as const
 export const FACILITY_STATUSES = ['incomplete', 'pending', 'needs_info', 'verified', 'rejected', 'suspended'] as const
@@ -59,6 +60,8 @@ export type MyFacilityView = {
 	status: FacilityStatus
 	role: 'admin' | 'attendant'
 	facilityCode: string | null
+	/** The public invite link name: /join/<slug>. */
+	slug: string | null
 	licenseNumber: string | null
 	owner: string | null
 	address: string | null
@@ -96,3 +99,37 @@ export type AdminFacilityDetail = AdminFacilityRow & {
 	/** Other facilities that use the same license number. */
 	duplicates: { id: string; name: string; town: string; status: FacilityStatus }[]
 }
+
+export const inviteInput = z.object({
+	email: z.string().trim().toLowerCase().email('Enter their email').max(254),
+	role: z.enum(['attendant', 'admin']).default('attendant'),
+})
+export const roleInput = z.object({ role: z.enum(['attendant', 'admin']) })
+
+/** Someone new joining a facility from an invite: no donor details. The email comes from the invite. */
+export const joinInput = z.object({
+	name: z.string().trim().min(2, 'Enter your name').max(100),
+	phone: z.string().transform((v, ctx) => {
+		const p = normalizePhone(v)
+		if (!p) ctx.addIssue({ code: 'custom', message: 'Enter a valid Kenyan phone number' })
+		return p ?? ''
+	}),
+	password: z.string().min(8, 'Use at least 8 characters').max(200),
+})
+
+/** Registering a facility when you are not a donor yet: the person and the first facts about the facility. */
+export const registerFacilityInput = joinInput.extend({
+	email: z.string().trim().toLowerCase().email('Enter a valid email').max(254),
+	facilityName: z.string().trim().min(2, 'Enter the facility name').max(150),
+	facilityType: z.enum(FACILITY_TYPES, { message: 'Choose a type' }),
+	county: z.string().trim().min(2, 'Choose a county').max(80),
+	town: z.string().trim().min(2, 'Enter the town').max(80),
+})
+
+/** What an admin may change on a verified facility. The license number is locked once verified. */
+export const facilityProfileInput = facilityInput.omit({ authorised: true, role: true, note: true, licenseNumber: true }).partial()
+
+export type MemberView = { userId: string | null; inviteId: string | null; name: string | null; email: string; role: 'admin' | 'attendant'; status: 'active' | 'invited'; isMe: boolean; since: string }
+export type InviteView = { facilityName: string; town: string; email: string; role: 'admin' | 'attendant'; invitedBy: string | null; accountExists: boolean }
+export type FacilityStats = { homeDonors: number; verifiedDonors: number; registeredDonors: number }
+export type PublicFacility = { id: string; name: string; town: string; county: string }
