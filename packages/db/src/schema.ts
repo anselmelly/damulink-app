@@ -200,6 +200,7 @@ export const facilityMembers = mysqlTable(
 		userId: varchar('user_id', { length: 26 }).notNull(),
 		role: mysqlEnum('role', ['admin', 'attendant']).notNull(),
 		roleTitle: varchar('role_title', { length: 80 }), // "Laboratory in charge", as the applicant wrote it
+		canApprove: boolean('can_approve').notNull().default(false), // may approve or reject blood requests (admins always may)
 		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
 	},
 	(t) => [uniqueIndex('facility_members_uq').on(t.facilityId, t.userId), index('facility_members_user_idx').on(t.userId)],
@@ -238,4 +239,61 @@ export const facilityInvites = mysqlTable(
 		revokedAt: datetime('revoked_at', { fsp: 3 }),
 	},
 	(t) => [uniqueIndex('facility_invites_hash_uq').on(t.tokenHash), index('facility_invites_facility_idx').on(t.facilityId, t.email)],
+)
+
+// ---------- phase 4a: requests for blood ----------
+/** A request for blood. The patient columns are private: only the requester and the facility's team ever read them. */
+export const bloodRequests = mysqlTable(
+	'blood_requests',
+	{
+		id: varchar('id', { length: 26 }).primaryKey(),
+		number: int('number').notNull(), // REQ-0042, one running number for the whole system
+		facilityId: varchar('facility_id', { length: 26 }).notNull(),
+		requesterId: varchar('requester_id', { length: 26 }), // null when the facility raised it
+		raisedBy: varchar('raised_by', { length: 26 }), // the attendant, for a facility's own request
+		source: mysqlEnum('source', ['public', 'facility']).notNull(),
+		patientRef: varchar('patient_ref', { length: 120 }).notNull(),
+		patientRefKey: varchar('patient_ref_key', { length: 120 }).notNull(), // normalised, for "one open request per patient"
+		patientName: varchar('patient_name', { length: 120 }),
+		relation: varchar('relation', { length: 20 }),
+		bloodTypeAsked: varchar('blood_type_asked', { length: 8 }).notNull(),
+		unitsAsked: int('units_asked').notNull(),
+		neededBy: datetime('needed_by', { fsp: 3 }).notNull(),
+		urgencyAsked: mysqlEnum('urgency_asked', ['normal', 'urgent', 'surge']).notNull(),
+		note: text('note'),
+		internalNote: text('internal_note'),
+		status: mysqlEnum('status', ['pending', 'needs_info', 'confirmed', 'approved', 'published', 'closed', 'rejected', 'cancelled']).notNull(),
+		bloodType: varchar('blood_type', { length: 4 }), // the facility's confirmed values
+		units: int('units'),
+		urgency: mysqlEnum('urgency', ['normal', 'urgent', 'surge']),
+		confirmedBy: varchar('confirmed_by', { length: 26 }),
+		confirmedAt: datetime('confirmed_at', { fsp: 3 }),
+		decidedBy: varchar('decided_by', { length: 26 }),
+		decidedAt: datetime('decided_at', { fsp: 3 }),
+		rejectReason: varchar('reject_reason', { length: 30 }),
+		rejectMessage: text('reject_message'),
+		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
+		updatedAt: datetime('updated_at', { fsp: 3 }).notNull(),
+	},
+	(t) => [
+		uniqueIndex('blood_requests_number_uq').on(t.number),
+		index('blood_requests_facility_idx').on(t.facilityId, t.status, t.createdAt),
+		index('blood_requests_requester_idx').on(t.requesterId, t.createdAt),
+		index('blood_requests_patient_idx').on(t.facilityId, t.patientRefKey, t.status),
+	],
+)
+
+/** What happened to a request. `visibleToRequester` events make up the requester's timeline. */
+export const requestEvents = mysqlTable(
+	'request_events',
+	{
+		id: varchar('id', { length: 26 }).primaryKey(),
+		requestId: varchar('request_id', { length: 26 }).notNull(),
+		kind: mysqlEnum('kind', ['sent', 'raised', 'confirmed', 'asked', 'replied', 'approved', 'rejected', 'cancelled']).notNull(),
+		actorId: varchar('actor_id', { length: 26 }),
+		note: text('note'),
+		visibleToRequester: boolean('visible_to_requester').notNull().default(true),
+		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
+	},
+	(t) => [index('request_events_request_idx').on(t.requestId, t.createdAt)],
 )

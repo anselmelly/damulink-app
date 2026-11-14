@@ -23,7 +23,7 @@ export async function getFacilityByCode(db: Db, code: string) {
 // ---------- members
 export async function listMembers(db: Db, facilityId: string) {
 	return db
-		.select({ userId: users.id, name: users.name, email: users.email, role: facilityMembers.role, since: facilityMembers.createdAt })
+		.select({ userId: users.id, name: users.name, email: users.email, role: facilityMembers.role, canApprove: facilityMembers.canApprove, since: facilityMembers.createdAt })
 		.from(facilityMembers)
 		.innerJoin(users, eq(users.id, facilityMembers.userId))
 		.where(eq(facilityMembers.facilityId, facilityId))
@@ -84,3 +84,6 @@ export async function donorStats(db: Db, facilityId: string) {
 	return { homeDonors: total, verifiedDonors: verified, registeredDonors: total - verified }
 }
 
+export async function setMemberCanApprove(db: Db, facilityId: string, userId: string, canApprove: boolean): Promise<void> {
+	await db.update(facilityMembers).set({ canApprove }).where(and(eq(facilityMembers.facilityId, facilityId), eq(facilityMembers.userId, userId)))
+}

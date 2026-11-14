@@ -9,11 +9,13 @@ import type { Mailer, Sms } from './lib/services'
 import { requestId } from './middleware/request-id'
 import { authRoutes } from './routes/auth'
 import { adminRoutes } from './routes/admin'
+import { facilityRequestRoutes } from './routes/facility-requests'
 import { facilityRoutes } from './routes/facilities'
 import { facilitySignupRoutes } from './routes/facility-signup'
 import { inviteRoutes } from './routes/invites'
 import { myFacilityRoutes } from './routes/my-facilities'
 import { meRoutes } from './routes/me'
+import { requestRoutes } from './routes/requests'
 import { verificationRoutes } from './routes/verification'
 
 /** `fixedOtp` is a development aid (see env.ts): when set, every phone code is that value. */
@@ -47,6 +49,8 @@ export function createApp(deps: AppDeps) {
 	app.route('/api/invites', inviteRoutes)
 	app.route('/api/me', meRoutes as unknown as Hono<AppEnv>)
 	app.route('/api/facilities', facilityRoutes)
+	app.route('/api/requests', requestRoutes)
+	app.route('/api/my-facilities/:id/requests', facilityRequestRoutes)
 	app.route('/api/my-facilities', myFacilityRoutes)
 	app.route('/api/admin', adminRoutes)
 

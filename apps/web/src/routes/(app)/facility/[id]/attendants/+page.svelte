@@ -73,6 +73,19 @@
 			busy = false
 		}
 	}
+	/** Lets an attendant approve or reject blood requests (admins always can). */
+	async function setApprove(who: MemberView, canApprove: boolean) {
+		error = ''
+		note = ''
+		who.canApprove = canApprove // show it at once; undone below if the server refuses
+		try {
+			await auth.call(`/my-facilities/${id}/members/${who.userId}/permissions`, { body: { canApprove } })
+			note = canApprove ? `${who.name} can now approve or reject requests.` : `${who.name} can no longer approve or reject requests.`
+		} catch (err) {
+			who.canApprove = !canApprove
+			error = err instanceof ApiError ? err.message : 'Something went wrong.'
+		}
+	}
 	const q = $derived(
 		confirm
 			? {
@@ -84,7 +97,9 @@
 			: null,
 	)
 	const rows = [
-		['Handle requests, publish calls and drives, schedule donors', true, true],
+		['Confirm requests with the ward, ask for more information', true, true],
+		['Approve or reject requests (attendants only when an admin allows it)', true, false],
+		['Publish calls and drives, schedule donors', true, true],
 		['Confirm donations and record blood type and weight', true, true],
 		['Correct old records', true, false],
 		['Add or remove attendants, promote an admin', true, false],
@@ -137,6 +152,13 @@
 						<p class="font-bold leading-6">{p.name ?? p.email}{#if p.isMe} <span class="font-normal text-muted">(you)</span>{/if}</p>
 						<p class="truncate text-[13px] text-muted">{p.name ? `${p.email} · ` : ''}{p.status === 'invited' ? `Invite sent ${shortDate(p.since)}` : `Joined ${shortDate(p.since)}`}</p>
 						<div class="mt-2 flex flex-wrap items-center gap-2"><span class="badge {p.role === 'admin' ? 'badge-soft' : 'badge-neutral'}">{p.role === 'admin' ? 'Admin' : 'Attendant'}</span><span class="badge {p.status === 'active' ? 'badge-ok' : 'badge-warn'}">{p.status === 'active' ? 'Active' : 'Invited'}</span></div>
+						{#if p.status === 'active'}
+							{#if p.role === 'admin'}
+								<p class="mt-3 text-[13px] text-muted">Admins can always approve or reject requests.</p>
+							{:else}
+								<label class="mt-3 flex cursor-pointer items-center gap-3 text-[14px] font-semibold"><input type="checkbox" checked={p.canApprove} onchange={(e) => setApprove(p, e.currentTarget.checked)} class="peer sr-only" /><span class="switch"></span>Can approve or reject requests</label>
+							{/if}
+						{/if}
 					</div>
 					<div class="flex flex-wrap items-center gap-1 sm:justify-end">
 						{#if p.status === 'invited'}

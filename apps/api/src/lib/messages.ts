@@ -45,3 +45,13 @@ export function inviteMessage(to: string, facilityName: string, facilityCode: st
 		text: `${invitedBy} invited you to join ${facilityName} on ${BRAND.name} as ${what}.\n\n${how}\n\n${appUrl}/join-facility?token=${token}\n\nWhen you log in, add the facility code ${facilityCode} to open the facility side. The link works for 14 days.`,
 	}
 }
+
+/** Tells a requester what the facility did with their request. Carries the number and the facility, never the patient. */
+export function requestDecisionMessage(to: string, number: string, facilityName: string, action: 'approve' | 'reject' | 'ask', text: string | null, appUrl: string): MailMessage {
+	const lines: Record<typeof action, [string, string]> = {
+		approve: [`Request ${number} was approved`, `${facilityName} approved your request ${number}. The facility will now look for donors.`],
+		reject: [`Request ${number} was not approved`, `${facilityName} could not go ahead with your request ${number}.${text ? `\n\nMessage from the facility: ${text}` : ''}`],
+		ask: [`${facilityName} has a question about request ${number}`, `${facilityName} needs a little more information about your request ${number}:\n\n${text ?? ''}\n\nPlease answer in your account so they can continue.`],
+	}
+	return { to, subject: lines[action][0], text: `${lines[action][1]}\n\n${appUrl}/requests` }
+}

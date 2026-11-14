@@ -16,7 +16,7 @@
 		[
 			{ key: 'home', label: 'Home', icon: 'home' },
 			{ key: 'status', label: 'Facility status', href: f ? `/facility/${f.id}` : undefined, icon: 'shield' },
-			{ key: 'requests', label: 'Requests', icon: 'clipboard' },
+			{ key: 'requests', label: 'Requests', href: f ? `/facility/${f.id}/requests` : undefined, icon: 'clipboard' },
 			{ key: 'calls', label: 'Calls', icon: 'bell' },
 			{ key: 'checkin', label: 'Check-in', icon: 'check' },
 			{ key: 'drives', label: 'Blood drives', icon: 'calendar' },

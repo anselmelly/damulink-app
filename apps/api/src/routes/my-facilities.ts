@@ -12,12 +12,14 @@ import {
 	listOpenInvites,
 	removeMember,
 	revokeInvite,
+	setMemberCanApprove,
 	setMemberRole,
+	writeAudit,
 	setMemberTitle,
 	updateFacility,
 	type Facility,
 } from '@damu/db'
-import { facilityInput, facilityProfileInput, facilityReplyInput, inviteInput, roleInput, type MemberView } from '@damu/shared-types'
+import { facilityInput, facilityProfileInput, facilityReplyInput, inviteInput, permissionInput, roleInput, type MemberView } from '@damu/shared-types'
 import { randomBytes } from 'node:crypto'
 import type { AppEnv } from '../app'
 import { ApiError } from '../lib/errors'
@@ -138,8 +140,8 @@ myFacilityRoutes.get('/:id/members', requireAuth, async (c: Context<AuthEnv>) =>
 	const people = await listMembers(db, f.id)
 	const invites = await listOpenInvites(db, f.id, clock.now())
 	const rows: MemberView[] = [
-		...people.map((p) => ({ userId: p.userId, inviteId: null, name: p.name, email: p.email, role: p.role, status: 'active' as const, isMe: p.userId === user.id, since: p.since.toISOString() })),
-		...invites.map((i) => ({ userId: null, inviteId: i.id, name: null, email: i.email, role: i.role, status: 'invited' as const, isMe: false, since: i.createdAt.toISOString() })),
+		...people.map((p) => ({ userId: p.userId, inviteId: null, name: p.name, email: p.email, role: p.role, canApprove: p.canApprove, status: 'active' as const, isMe: p.userId === user.id, since: p.since.toISOString() })),
+		...invites.map((i) => ({ userId: null, inviteId: i.id, name: null, email: i.email, role: i.role, canApprove: false, status: 'invited' as const, isMe: false, since: i.createdAt.toISOString() })),
 	]
 	return c.json(rows)
 })
@@ -172,6 +174,18 @@ myFacilityRoutes.patch('/:id/members/:userId', requireAuth, async (c: Context<Au
 	if (!m) throw new ApiError(404, 'not_found', 'Not found.')
 	if (m.role === 'admin' && role === 'attendant' && (await countAdmins(db, f.id)) <= 1) throw new ApiError(409, 'last_admin', 'A facility always keeps at least one admin.')
 	await setMemberRole(db, f.id, userId, role)
+	return c.body(null, 200)
+})
+
+/** Lets an attendant approve or reject blood requests (admins always can). */
+myFacilityRoutes.post('/:id/members/:userId/permissions', requireAuth, async (c: Context<AuthEnv>) => {
+	const { db, clock, user } = c.var
+	const { f } = await mineAsAdmin(c)
+	const { canApprove } = parseInput(permissionInput, await readJson(c))
+	const userId = c.req.param('userId') ?? ''
+	if (!(await getMembership(db, f.id, userId))) throw new ApiError(404, 'not_found', 'Not found.')
+	await setMemberCanApprove(db, f.id, userId, canApprove)
+	await writeAudit(db, { actorId: user.id, action: 'member.permission', target: f.id, detail: `${userId}:${canApprove ? 'grant' : 'revoke'}` }, clock.now())
 	return c.body(null, 200)
 })
 

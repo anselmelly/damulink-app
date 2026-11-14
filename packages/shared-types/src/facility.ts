@@ -129,7 +129,7 @@ export const registerFacilityInput = joinInput.extend({
 /** What an admin may change on a verified facility. The license number is locked once verified. */
 export const facilityProfileInput = facilityInput.omit({ authorised: true, role: true, note: true, licenseNumber: true }).partial()
 
-export type MemberView = { userId: string | null; inviteId: string | null; name: string | null; email: string; role: 'admin' | 'attendant'; status: 'active' | 'invited'; isMe: boolean; since: string }
+export type MemberView = { userId: string | null; inviteId: string | null; name: string | null; email: string; role: 'admin' | 'attendant'; status: 'active' | 'invited'; canApprove: boolean; isMe: boolean; since: string }
 export type InviteView = { facilityName: string; town: string; email: string; role: 'admin' | 'attendant'; invitedBy: string | null; accountExists: boolean }
 export type FacilityStats = { homeDonors: number; verifiedDonors: number; registeredDonors: number }
 export type PublicFacility = { id: string; name: string; town: string; county: string }

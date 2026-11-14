@@ -6,7 +6,8 @@
 	"scripts": {
 		"dev": "node --watch --import tsx src/server.ts",
 		"check": "tsc --noEmit",
-		"test": "vitest run"
+		"test": "vitest run",
+		"seed:requests": "node --import tsx src/seed-requests.ts"
 	},
 	"dependencies": {
 		"@damu/db": "workspace:*",
