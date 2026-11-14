@@ -31,6 +31,8 @@ export type MeResponse = {
 	name: string
 	email: string
 	phone: string // masked
+	sex: 'female' | 'male'
+	dateOfBirth: string // YYYY-MM-DD, the donor's own
 	emailVerified: boolean
 	phoneVerified: boolean
 	canDonate: boolean

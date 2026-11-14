@@ -21,7 +21,7 @@ import { loginInput, newDonorCode, refreshInput, signupInput } from '@damu/share
 import type { AppEnv } from '../app'
 import { ApiError } from '../lib/errors'
 import { newId } from '../lib/id'
-import { isAdult, toMe } from '../lib/me'
+import { badBirthDate, isAdult, toMe } from '../lib/me'
 import { hashPassword, verifyPassword } from '../lib/password'
 import { issueSession, sha256 } from '../lib/session'
 import { parseInput, readJson } from '../lib/validate'
@@ -40,10 +40,8 @@ authRoutes.post('/signup', async (c) => {
 	const input = parseInput(signupInput, await readJson(c))
 	const now = clock.now()
 
-	const dob = new Date(`${input.dateOfBirth}T00:00:00Z`)
-	if (Number.isNaN(dob.getTime()) || dob.toISOString().slice(0, 10) !== input.dateOfBirth || dob > now || dob.getUTCFullYear() < 1900) {
-		throw new ApiError(422, 'invalid_input', 'Please check the highlighted fields.', { dateOfBirth: 'Enter a real date of birth' })
-	}
+	const badDob = badBirthDate(input.dateOfBirth, now)
+	if (badDob) throw new ApiError(422, 'invalid_input', 'Please check the highlighted fields.', { dateOfBirth: badDob })
 	for (const id of [input.homeFacilityId, ...input.extraFacilityIds].filter((x): x is string => !!x)) {
 		if (!(await facilityExists(db, id))) throw new ApiError(422, 'invalid_input', 'Please check the highlighted fields.', { [id === input.homeFacilityId ? 'homeFacilityId' : 'extraFacilityIds']: 'Choose a facility from the list' })
 	}

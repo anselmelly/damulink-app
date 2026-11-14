@@ -75,6 +75,8 @@ export const userExtraFacilities = mysqlTable(
 export const facilityRequests = mysqlTable('facility_requests', {
 	id: varchar('id', { length: 26 }).primaryKey(),
 	name: varchar('name', { length: 150 }).notNull(),
+	town: varchar('town', { length: 80 }),
+	county: varchar('county', { length: 80 }),
 	userId: varchar('user_id', { length: 26 }).notNull(),
 	createdAt: datetime('created_at', { fsp: 3 }).notNull(),
 })
@@ -154,3 +156,21 @@ export const donationRequests = mysqlTable(
 	},
 	(t) => [index('donation_requests_user_idx').on(t.userId, t.createdAt), index('donation_requests_facility_idx').on(t.facilityId, t.status)],
 )
+
+// ---------- phase 2b: donor settings ----------
+/** A donor's alert and reminder choices. No row yet means the defaults (alerts follow the sign-up SMS choice). */
+export const donorPrefs = mysqlTable('donor_prefs', {
+	userId: varchar('user_id', { length: 26 }).primaryKey(),
+	smsAlerts: boolean('sms_alerts').notNull(),
+	emailAlerts: boolean('email_alerts').notNull().default(false),
+	available: boolean('available').notNull().default(true),
+	pausedUntil: datetime('paused_until', { fsp: 3 }),
+	weeklyCap: int('weekly_cap'), // null = the system default
+	quietFrom: int('quiet_from'), // hour 0-23, null = the system default
+	quietTo: int('quiet_to'),
+	reminderCycle: mysqlEnum('reminder_cycle', ['on_day', 'days_before', 'custom', 'off']).notNull().default('on_day'),
+	reminderDaysBefore: int('reminder_days_before').notNull().default(3),
+	reminderCycleMonths: int('reminder_cycle_months'),
+	appointmentReminders: boolean('appointment_reminders').notNull().default(true),
+	updatedAt: datetime('updated_at', { fsp: 3 }).notNull(),
+})

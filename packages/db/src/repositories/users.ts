@@ -48,3 +48,20 @@ export async function userFacilities(db: Db, u: Pick<User, 'id' | 'homeFacilityI
 export async function setDonorCode(db: Db, userId: string, code: string): Promise<void> {
 	await db.update(users).set({ donorCode: code }).where(eq(users.id, userId))
 }
+
+export async function updateUser(db: Db, id: string, changes: Partial<typeof users.$inferInsert>): Promise<void> {
+	if (Object.keys(changes).length) await db.update(users).set(changes).where(eq(users.id, id))
+}
+
+/** Replaces the home facility and the extra ones in one step. */
+export async function replaceFacilities(db: Db, userId: string, home: string | null, extras: string[]): Promise<void> {
+	await db.transaction(async (tx) => {
+		await tx.update(users).set({ homeFacilityId: home }).where(eq(users.id, userId))
+		await tx.delete(userExtraFacilities).where(eq(userExtraFacilities.userId, userId))
+		if (extras.length) await tx.insert(userExtraFacilities).values(extras.map((facilityId) => ({ userId, facilityId })))
+	})
+}
+
+export async function insertFacilityRequest(db: Db, r: typeof facilityRequests.$inferInsert): Promise<void> {
+	await db.insert(facilityRequests).values(r)
+}

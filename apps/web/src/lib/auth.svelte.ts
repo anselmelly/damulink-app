@@ -68,6 +68,20 @@ class Auth {
 		this.clear()
 		if (rt) await apiFetch('/auth/logout', { body: { refreshToken: rt } }).catch(() => {})
 	}
+	/** Changes the password. Every old session dies, so the answer's new tokens replace ours. */
+	async changePassword(currentPassword: string, newPassword: string) {
+		const t = await this.call<Tokens>('/me/password', { body: { currentPassword, newPassword } })
+		this.set(t)
+	}
+	/** Deletes the account (needs the password) and ends the session here. */
+	async deleteAccount(password: string) {
+		await this.call('/me', { method: 'DELETE', body: { password } })
+		this.clear()
+	}
+	/** Saves a change to the profile and keeps the shown user in step. */
+	async patchProfile(changes: Record<string, unknown>) {
+		this.user = await this.call<MeResponse>('/me', { method: 'PATCH', body: changes })
+	}
 	/** Re-reads /me (after verifying a phone or email, for example). */
 	async reload() {
 		this.user = await this.call<MeResponse>('/me')

@@ -5,6 +5,7 @@
 	import { ApiError, apiFetch } from '$lib/api'
 	import { BRAND } from '$lib/brand'
 	import AuthShell from '$lib/ui/AuthShell.svelte'
+	import DobInput from '$lib/ui/DobInput.svelte'
 	import Icon from '$lib/ui/Icon.svelte'
 	import PasswordInput from '$lib/ui/PasswordInput.svelte'
 	import TextField from '$lib/ui/TextField.svelte'
@@ -17,9 +18,8 @@
 	let phone = $state('')
 	let password = $state('')
 	let sex = $state<'female' | 'male' | ''>('')
-	let dobDay = $state('')
-	let dobMonth = $state('')
-	let dobYear = $state('')
+	let dob = $state('')
+	let dobTouched = $state(false)
 	let homeFacilityId = $state('')
 	let extraFacilityId = $state('')
 	let showExtra = $state(false)
@@ -38,16 +38,6 @@
 			/* the list is optional: "My facility is not listed" still works */
 		}
 	})
-
-	/** The three boxes make one date (YYYY-MM-DD), or '' until they hold a real calendar date. */
-	const dob = $derived.by(() => {
-		const d = Number(dobDay), m = Number(dobMonth), y = Number(dobYear)
-		if (!Number.isInteger(d) || !Number.isInteger(m) || !Number.isInteger(y) || dobYear.length !== 4) return ''
-		const t = new Date(Date.UTC(y, m - 1, d))
-		if (t.getUTCFullYear() !== y || t.getUTCMonth() !== m - 1 || t.getUTCDate() !== d) return ''
-		return t.toISOString().slice(0, 10)
-	})
-	const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
 	const under18 = $derived.by(() => {
 		if (!dob) return false
@@ -77,7 +67,7 @@
 		errors = {}
 		formError = ''
 		if (!sex) errors.sex = 'Choose one'
-		if (!dob) errors.dateOfBirth = dobDay || dobMonth || dobYear ? 'Enter a real date, like 14 March 1995' : 'Enter your date of birth'
+		if (!dob) errors.dateOfBirth = dobTouched ? 'Enter a real date, like 14 March 1995' : 'Enter your date of birth'
 		if (!agree) errors.agree = 'You need to agree to continue'
 		if (Object.keys(errors).length) return
 		busy = true
@@ -174,27 +164,7 @@
 						{#if errors.sex}<span class="field-error"><Icon name="alert" class="h-4 w-4" />{errors.sex}</span>{:else}<span class="field-help">Sets the waiting time between donations.</span>{/if}
 					</fieldset>
 
-					<fieldset class="flex min-w-0 flex-col gap-2 border-0 p-0">
-						<legend class="field-label mb-2 p-0">Date of birth</legend>
-						<div class="grid grid-cols-[1fr_2fr_1.3fr] gap-2">
-							<div class="flex flex-col gap-1.5">
-								<label for="dob-day" class="text-[13px] leading-[18px] text-muted">Day</label>
-								<input id="dob-day" type="text" inputmode="numeric" autocomplete="bday-day" placeholder="14" maxlength="2" bind:value={dobDay} class="field-input px-3 text-center {errors.dateOfBirth ? 'is-error' : ''}" />
-							</div>
-							<div class="flex flex-col gap-1.5">
-								<label for="dob-month" class="text-[13px] leading-[18px] text-muted">Month</label>
-								<select id="dob-month" autocomplete="bday-month" bind:value={dobMonth} class="field-input px-3 {errors.dateOfBirth ? 'is-error' : ''}">
-									<option value="">Month</option>
-									{#each MONTHS as m, i}<option value={String(i + 1)}>{m}</option>{/each}
-								</select>
-							</div>
-							<div class="flex flex-col gap-1.5">
-								<label for="dob-year" class="text-[13px] leading-[18px] text-muted">Year</label>
-								<input id="dob-year" type="text" inputmode="numeric" autocomplete="bday-year" placeholder="1995" maxlength="4" bind:value={dobYear} class="field-input px-3 text-center {errors.dateOfBirth ? 'is-error' : ''}" />
-							</div>
-						</div>
-						{#if errors.dateOfBirth}<span class="field-error"><Icon name="alert" class="h-4 w-4" />{errors.dateOfBirth}</span>{:else}<span class="field-help">Donors must be 18 to 65.</span>{/if}
-					</fieldset>
+					<DobInput bind:value={dob} bind:touched={dobTouched} error={errors.dateOfBirth} />
 
 					<div class="flex flex-col gap-2">
 						<label for="home-facility" class="field-label">Home facility</label>

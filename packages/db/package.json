@@ -9,7 +9,7 @@
 		"check": "tsc --noEmit",
 		"test": "echo no tests here",
 		"generate": "drizzle-kit generate",
-		"migrate": "node --import tsx src/migrate.ts"
+		"migrate": "node --import tsx src/migrate.ts", "seed": "node --import tsx src/seed.ts"
 	},
 	"dependencies": {
 		"drizzle-orm": "^0.44.0",
