@@ -24,4 +24,4 @@ Create a local database and a user that may also create `damulink_test_*` databa
 
 ## Status
 
-Done: foundations, phase 1 API (signup, login, tokens, /api/me, facility search, email verification, phone codes, password reset and change) and the phase 1 web screens (home, login, create account, forgot and reset password, verify email and phone, choose path). Mail and SMS are stand-ins (the dev server prints them; nothing is sent) until a provider is connected. Next: phase 2 (donor account).
+Done: foundations, phase 1 API (signup, login, tokens, /api/me, facility search, email verification, phone codes, password reset and change) and the phase 1 web screens (home, login, create account, forgot and reset password, verify email and phone) with the donor dashboard as the landing page. Mail and SMS are stand-ins (the dev server prints them; nothing is sent) until a provider is connected. Next: phase 2 (donor account).

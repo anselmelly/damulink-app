@@ -18,7 +18,7 @@
 	let timer: ReturnType<typeof setInterval>
 
 	onMount(() => {
-		if (auth.user?.phoneVerified) void goto('/choose-path', { replaceState: true })
+		if (auth.user?.phoneVerified) void goto('/dashboard', { replaceState: true })
 		timer = setInterval(() => (seconds = Math.max(0, seconds - 1)), 1000)
 	})
 	onDestroy(() => clearInterval(timer))
@@ -30,7 +30,7 @@
 		try {
 			await auth.call('/auth/phone/verify', { body: { code } })
 			await auth.reload()
-			await goto('/choose-path')
+			await goto('/dashboard')
 		} catch (err) {
 			const c = err instanceof ApiError ? err.code : ''
 			if (c === 'code_expired') problem = { icon: 'clock', title: 'That code has expired.', text: ' Codes work for 10 minutes. Ask for a new one below.' }

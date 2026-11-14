@@ -21,7 +21,7 @@
 		try {
 			await auth.login(email.trim(), password)
 			const to = page.url.searchParams.get('redirect')
-			await goto(to && to.startsWith('/') && !to.startsWith('//') ? to : '/choose-path')
+			await goto(to && to.startsWith('/') && !to.startsWith('//') ? to : '/dashboard')
 		} catch (err) {
 			if (err instanceof ApiError && err.code === 'invalid_credentials') error = { title: 'Email or password is not right.', text: ' Check them and try again, or reset your password.' }
 			else if (err instanceof ApiError && (err.status === 429 || err.status === 403)) error = { title: err.message, text: '' }
