@@ -16,11 +16,12 @@ Needs Node 24, pnpm and a local MariaDB.
 cp .env.example .env     # then fill in the database user and password
 pnpm install
 pnpm check               # typecheck, tests (a throwaway database per run) and the secrets check
-pnpm --filter @damu/api dev
+pnpm --filter @damu/api dev     # API on http://127.0.0.1:8790
+pnpm --filter @damu/web dev     # web on http://localhost:5173 (sends /api to the API)
 ```
 
 Create a local database and a user that may also create `damulink_test_*` databases (see `.env.example` for the names the app reads).
 
 ## Status
 
-Done: phase 0 (foundations), phase 1a (signup, login, tokens, `/api/me`, facility search) and phase 1b (email verification, phone codes, password reset and change). Mail and SMS are stand-ins (the dev server prints them; nothing is sent) until a provider is connected. Next: the web screens for auth.
+Done: foundations, phase 1 API (signup, login, tokens, /api/me, facility search, email verification, phone codes, password reset and change) and the phase 1 web screens (home, login, create account, forgot and reset password, verify email and phone, choose path). Mail and SMS are stand-ins (the dev server prints them; nothing is sent) until a provider is connected. Next: phase 2 (donor account).

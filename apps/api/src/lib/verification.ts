@@ -17,8 +17,8 @@ export async function issueLinkToken(db: Db, userId: string, kind: 'verify_email
 /** The code is hashed together with the user id, so equal codes for two users do not look alike in the table. */
 export const otpHash = (userId: string, code: string) => sha256(`${userId}:${code}`)
 
-export async function issueOtp(db: Db, userId: string, phone: string, now: Date): Promise<string> {
-	const code = String(randomInt(0, 1_000_000)).padStart(6, '0')
+export async function issueOtp(db: Db, userId: string, phone: string, now: Date, fixed?: string): Promise<string> {
+	const code = fixed ?? String(randomInt(0, 1_000_000)).padStart(6, '0')
 	await createOtp(db, { id: newId(now.getTime()), userId, phone, codeHash: otpHash(userId, code), expiresAt: new Date(now.getTime() + OTP_TTL_MS), createdAt: now })
 	return code
 }
@@ -36,7 +36,7 @@ export async function startVerification(d: Deps, user: User, now: Date): Promise
 	await hit(d.db, `resend-email:${user.id}`, RESEND_EMAIL_COOLDOWN_MS, now) // the first email counts toward the resend wait
 	try {
 		await d.mailer.send(verifyEmailMessage(user.email, d.config.appUrl, await issueLinkToken(d.db, user.id, 'verify_email', now)))
-		await d.sms.send(otpMessage(user.phone, await issueOtp(d.db, user.id, user.phone, now)))
+		await d.sms.send(otpMessage(user.phone, await issueOtp(d.db, user.id, user.phone, now, d.config.fixedOtp)))
 	} catch (e) {
 		console.error('could not send verification messages', e instanceof Error ? e.message : 'unknown error')
 	}

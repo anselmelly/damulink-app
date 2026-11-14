@@ -9,7 +9,7 @@ export type TestClock = ReturnType<typeof fixedClock>
 export const TEST_SECRET = 'test-secret-test-secret-test-secret-0123456789'
 
 /** One app over the test database. The pool is shared by the file; tests clear the tables they use. */
-export function makeTestApp(opts: { clock?: Clock; allowedOrigins?: string[] } = {}) {
+export function makeTestApp(opts: { clock?: Clock; allowedOrigins?: string[]; fixedOtp?: string } = {}) {
 	const { db, pool } = makeDb({
 		host: process.env.DB_HOST ?? '127.0.0.1',
 		port: Number(process.env.DB_PORT ?? 3306),
@@ -25,7 +25,7 @@ export function makeTestApp(opts: { clock?: Clock; allowedOrigins?: string[] } =
 		clock,
 		mailer: mail,
 		sms,
-		config: { jwtSecret: TEST_SECRET, pbkdf2Iterations: 1000, appUrl: 'http://localhost:5173', allowedOrigins: opts.allowedOrigins ?? ['http://localhost:5173'] },
+		config: { jwtSecret: TEST_SECRET, pbkdf2Iterations: 1000, fixedOtp: opts.fixedOtp, appUrl: 'http://localhost:5173', allowedOrigins: opts.allowedOrigins ?? ['http://localhost:5173'] },
 	})
 	return { app, db, pool, clock, mail, sms }
 }

@@ -12,7 +12,8 @@ import { facilityRoutes } from './routes/facilities'
 import { meRoutes } from './routes/me'
 import { verificationRoutes } from './routes/verification'
 
-export type AppConfig = { jwtSecret: string; pbkdf2Iterations: number; appUrl: string; allowedOrigins: string[] }
+/** `fixedOtp` is a development aid (see env.ts): when set, every phone code is that value. */
+export type AppConfig = { jwtSecret: string; pbkdf2Iterations: number; appUrl: string; allowedOrigins: string[]; fixedOtp?: string }
 export type AppDeps = { db: Db; config: AppConfig; mailer: Mailer; sms: Sms; clock?: Clock }
 export type AppEnv = { Variables: { requestId: string; db: Db; clock: Clock; config: AppConfig; mailer: Mailer; sms: Sms } }
 

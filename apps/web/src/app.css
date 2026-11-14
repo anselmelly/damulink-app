@@ -1,0 +1,39 @@
+@import 'tailwindcss';
+
+@theme {
+	--color-ink: #2a1218;
+	--color-muted: #7a5560;
+	--color-field: #b86f82;
+	--font-sans: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+html {
+	scroll-behavior: smooth;
+}
+
+/* Component classes shared by every screen (the same look as the design mocks). */
+@layer components {
+	.field-label { @apply text-sm font-semibold leading-5 text-ink; }
+	.field-input { @apply h-[52px] w-full rounded-xl border-[1.5px] border-field bg-white px-4 text-base text-ink placeholder:text-muted focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300; }
+	.field-input.is-error { @apply border-red-600 bg-red-50; }
+	.field-help { @apply text-[13px] leading-[18px] text-muted; }
+	.field-error { @apply flex items-center gap-1.5 text-[13px] font-semibold leading-[18px] text-red-700; }
+	.btn-primary { @apply flex h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-rose-600 text-base font-bold text-white hover:bg-rose-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300 disabled:cursor-not-allowed disabled:opacity-60; }
+	.btn-secondary { @apply flex h-[52px] w-full items-center justify-center gap-2 rounded-xl border-[1.5px] border-rose-200 bg-rose-50 text-base font-bold text-red-700 hover:bg-rose-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300 disabled:cursor-not-allowed disabled:opacity-60; }
+	.btn-light { @apply flex h-[52px] items-center justify-center gap-2 rounded-xl bg-white px-6 text-base font-bold text-red-700 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300; }
+	.link { @apply font-semibold text-red-700 hover:text-red-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300; }
+	.otp { @apply h-[60px] min-w-0 flex-1 rounded-xl border-[1.5px] border-field bg-white p-0 text-center text-2xl font-bold text-ink focus:border-rose-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300; }
+	.otp.is-error { @apply border-red-600 bg-red-50; }
+	.path-card { @apply flex items-center gap-3.5 rounded-2xl border-[1.5px] border-rose-200 bg-rose-50 p-4 text-ink hover:bg-rose-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300; }
+	.path-icon { @apply flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600; }
+	.path-title { @apply text-[17px] font-bold leading-6; }
+	.path-text { @apply text-sm leading-5 text-muted; }
+	.notice { @apply flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3.5 text-sm leading-[21px]; }
+	.notice-error { @apply flex items-start gap-3 rounded-xl border border-red-300 bg-red-50 px-4 py-3.5 text-sm leading-[21px]; }
+	.badge { @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[13px] font-bold leading-5; }
+	.badge-urgent { @apply bg-rose-600 text-white; }
+	.badge-soft { @apply bg-rose-100 text-red-700; }
+	.card { @apply rounded-2xl border-[1.5px] border-rose-200 bg-white; }
+	.seg-box { @apply flex h-[52px] cursor-pointer items-center justify-center rounded-xl border-[1.5px] border-field bg-white text-base font-semibold text-ink peer-checked:border-rose-600 peer-checked:bg-rose-50 peer-checked:text-red-700 peer-focus-visible:ring-4 peer-focus-visible:ring-pink-300; }
+	.eyebrow { @apply text-sm font-bold uppercase tracking-[.14em] text-rose-600; }
+}

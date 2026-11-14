@@ -9,6 +9,7 @@ for (const f of files) {
 	if (/\.(pem|key)$/.test(f)) bad.push(`${f}: key file`)
 }
 const patterns = [
+	[/^OTP_FIXED_CODE=\d/m, 'a fixed phone code set in a tracked file'],
 	[/-----BEGIN [A-Z ]*PRIVATE KEY-----/, 'private key block'],
 	[/\b(?:DB_PASSWORD|JWT_SECRET|[A-Z_]*API_KEY|[A-Z_]*TOKEN)=['"]?[A-Za-z0-9+/_-]{16,}/, 'secret-looking assignment'],
 ]

@@ -83,7 +83,7 @@ verificationRoutes.post('/resend-email', requireAuth, async (c: Context<AuthEnv>
 
 /** Sends a code to the phone on file, or to a new number (which replaces the old one and resets its verification). */
 verificationRoutes.post('/phone/send', requireAuth, async (c: Context<AuthEnv>) => {
-	const { db, clock, sms, user } = c.var
+	const { db, clock, sms, config, user } = c.var
 	const { phone } = parseInput(phoneSendInput, await readJson(c))
 	const now = clock.now()
 	const target = phone ?? user.phone
@@ -97,7 +97,7 @@ verificationRoutes.post('/phone/send', requireAuth, async (c: Context<AuthEnv>) 
 	if (last && now.getTime() - last.createdAt.getTime() < MIN) throw new ApiError(429, 'too_soon', 'Please wait a minute before asking for another code.')
 	if ((await countOtpsSince(db, user.id, new Date(now.getTime() - 60 * MIN))) >= MAX_SENDS_PER_HOUR) throw new ApiError(429, 'too_many_sends', 'Too many codes requested. Try again in an hour.')
 	if (phone && phone !== user.phone) await changePhone(db, user.id, phone)
-	await sms.send(otpMessage(target, await issueOtp(db, user.id, target, now)))
+	await sms.send(otpMessage(target, await issueOtp(db, user.id, target, now, config.fixedOtp)))
 	return c.body(null, 204)
 })
 
