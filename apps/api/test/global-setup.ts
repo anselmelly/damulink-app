@@ -1,18 +1,8 @@
-import { readFileSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { createConnection } from 'mysql2/promise'
+import { loadDotEnv } from '@damu/db'
 import { drizzle } from 'drizzle-orm/mysql2'
 import { migrate } from 'drizzle-orm/mysql2/migrator'
-
-/** Reads the repo-root .env (local development) without printing it. CI sets the variables itself. */
-function loadDotEnv() {
-	const f = resolve(__dirname, '../../../.env')
-	if (!existsSync(f)) return
-	for (const line of readFileSync(f, 'utf8').split('\n')) {
-		const m = line.match(/^([A-Z_]+)=(.*)$/)
-		if (m && process.env[m[1]] === undefined) process.env[m[1]] = m[2]
-	}
-}
 
 /** One throwaway database per test run, real migrations applied (the same SQL production gets). */
 export default async function setup() {

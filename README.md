@@ -23,4 +23,4 @@ Create a local database and a user that may also create `damulink_test_*` databa
 
 ## Status
 
-Phase 0: foundations (repo, health endpoint, error format, request ids, CORS for `X-Auth`, settings and an append-only audit log, test harness, secrets check). Auth is next.
+Phase 0 (foundations) and phase 1a (signup, login, tokens, `/api/me`, facility search) are done. Next: phase 1b (email verification, phone OTP, password reset).

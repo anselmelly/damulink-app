@@ -15,6 +15,13 @@
       "when": 1794658270291,
       "tag": "0001_audit_append_only",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1794661579097,
+      "tag": "0002_accounts",
+      "breakpoints": true
     }
   ]
 }
