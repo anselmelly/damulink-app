@@ -1,0 +1,30 @@
+# HTTPS is automatic: Caddy gets and renews the certificate once dm.anselmelly.com points at this server.
+dm.anselmelly.com {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(self)"
+		-Server
+	}
+
+	# the API, same address as the website so the browser sees one origin
+	handle /api/* {
+		reverse_proxy 127.0.0.1:8790
+	}
+
+	# everything else is the website
+	handle {
+		reverse_proxy 127.0.0.1:3000
+	}
+
+	log {
+		output file /var/log/caddy/damulink.log {
+			roll_size 10mb
+			roll_keep 5
+		}
+	}
+}

@@ -10,3 +10,4 @@ dist/
 plans/
 .svelte-kit/
 build/
+dist-release/

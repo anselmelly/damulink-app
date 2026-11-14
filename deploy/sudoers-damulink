@@ -1,0 +1,2 @@
+# /etc/sudoers.d/damulink (mode 440): the deploy user may restart exactly these services, and nothing else.
+deploy ALL=(root) NOPASSWD: /usr/bin/systemctl restart damulink-api damulink-web, /usr/bin/systemctl start damulink-migrate, /usr/bin/systemctl reload caddy, /usr/bin/systemctl is-active damulink-api damulink-web

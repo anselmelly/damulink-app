@@ -1,0 +1,25 @@
+[Unit]
+Description=DamuLink web (SvelteKit)
+After=network.target damulink-api.service
+
+[Service]
+Type=simple
+User=deploy
+Group=deploy
+WorkingDirectory=/srv/damulink/current/web
+EnvironmentFile=/srv/damulink/shared/web.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node /srv/damulink/current/web/build/index.js
+Restart=on-failure
+RestartSec=3
+MemoryMax=250M
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,28 @@
+[Unit]
+Description=DamuLink API
+After=network.target mariadb.service
+Wants=mariadb.service
+
+[Service]
+Type=simple
+User=deploy
+Group=deploy
+WorkingDirectory=/srv/damulink/current/api
+EnvironmentFile=/srv/damulink/shared/api.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node /srv/damulink/current/api/server.mjs
+Restart=on-failure
+RestartSec=3
+# a small server: one runaway process must not take the database down with it
+MemoryMax=300M
+# the API reads the database and the network, and writes nowhere on disk
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target

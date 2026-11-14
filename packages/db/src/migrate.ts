@@ -12,6 +12,7 @@ const need = (k: string) => {
 	return v
 }
 const conn = await createConnection({ host: need('DB_HOST'), port: Number(process.env.DB_PORT ?? 3306), user: need('DB_USER'), password: need('DB_PASSWORD'), database: need('DB_NAME') })
-await migrate(drizzle(conn), { migrationsFolder: resolve(import.meta.dirname, '../migrations') })
+// next to the source in development; a release bundle ships the folder beside the script and sets MIGRATIONS_DIR
+await migrate(drizzle(conn), { migrationsFolder: process.env.MIGRATIONS_DIR ?? resolve(import.meta.dirname, '../migrations') })
 await conn.end()
 console.log(`migrated ${process.env.DB_NAME}`)

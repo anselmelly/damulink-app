@@ -1,0 +1,19 @@
+# Run by the deploy script (never enabled at boot): applies the new release's SQL migrations before the switch.
+# It reads /srv/damulink/next, which the deploy script points at the release being installed.
+[Unit]
+Description=DamuLink database migrations
+After=mariadb.service
+Requires=mariadb.service
+
+[Service]
+Type=oneshot
+User=deploy
+Group=deploy
+EnvironmentFile=/srv/damulink/shared/api.env
+Environment=NODE_ENV=production
+Environment=MIGRATIONS_DIR=/srv/damulink/next/migrations
+ExecStart=/usr/bin/node /srv/damulink/next/api/migrate.mjs
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true

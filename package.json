@@ -9,6 +9,7 @@
 		"check": "turbo run check test && node scripts/hygiene.mjs"
 	},
 	"devDependencies": {
+		"esbuild": "^0.28.2",
 		"turbo": "^2.5.0"
 	},
 	"packageManager": "pnpm@11.24.0"
