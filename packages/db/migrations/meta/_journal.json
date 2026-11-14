@@ -43,6 +43,13 @@
       "when": 1794666773921,
       "tag": "0005_donor_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1794668040955,
+      "tag": "0006_facilities",
+      "breakpoints": true
     }
   ]
 }

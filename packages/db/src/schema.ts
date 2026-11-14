@@ -28,12 +28,25 @@ export const facilities = mysqlTable(
 	{
 		id: varchar('id', { length: 26 }).primaryKey(),
 		name: varchar('name', { length: 150 }).notNull(),
-		type: varchar('type', { length: 40 }).notNull(), // hospital, health centre, blood bank
+		type: varchar('type', { length: 40 }).notNull(), // hospital, health centre, dispensary, clinic, blood bank
 		town: varchar('town', { length: 80 }).notNull(),
 		county: varchar('county', { length: 80 }).notNull(),
-		status: mysqlEnum('status', ['pending', 'verified', 'suspended']).notNull().default('pending'),
+		// `incomplete`: signed up but the profile is not finished. `needs_info`: the reviewer asked a question.
+		status: mysqlEnum('status', ['incomplete', 'pending', 'needs_info', 'verified', 'rejected', 'suspended']).notNull().default('pending'),
+		licenseNumber: varchar('license_number', { length: 60 }),
+		owner: varchar('owner', { length: 150 }),
+		address: varchar('address', { length: 200 }),
+		lat: decimal('lat', { precision: 9, scale: 6, mode: 'number' }),
+		lng: decimal('lng', { precision: 9, scale: 6, mode: 'number' }),
+		phone: varchar('phone', { length: 20 }),
+		email: varchar('email', { length: 254 }),
+		/** What attendants type at login to open the facility side. */
+		facilityCode: varchar('facility_code', { length: 12 }),
+		createdBy: varchar('created_by', { length: 26 }),
+		submittedAt: datetime('submitted_at', { fsp: 3 }),
+		verifiedAt: datetime('verified_at', { fsp: 3 }),
 	},
-	(t) => [index('facilities_name_idx').on(t.name), index('facilities_town_idx').on(t.town)],
+	(t) => [index('facilities_name_idx').on(t.name), index('facilities_town_idx').on(t.town), uniqueIndex('facilities_code_uq').on(t.facilityCode), index('facilities_license_idx').on(t.licenseNumber), index('facilities_status_idx').on(t.status, t.submittedAt)],
 )
 
 export const users = mysqlTable(
@@ -174,3 +187,33 @@ export const donorPrefs = mysqlTable('donor_prefs', {
 	appointmentReminders: boolean('appointment_reminders').notNull().default(true),
 	updatedAt: datetime('updated_at', { fsp: 3 }).notNull(),
 })
+
+// ---------- phase 3a: facilities, members and the review trail ----------
+/** Who runs a facility. The person who adds it is its admin; attendants are added later. */
+export const facilityMembers = mysqlTable(
+	'facility_members',
+	{
+		facilityId: varchar('facility_id', { length: 26 }).notNull(),
+		userId: varchar('user_id', { length: 26 }).notNull(),
+		role: mysqlEnum('role', ['admin', 'attendant']).notNull(),
+		roleTitle: varchar('role_title', { length: 80 }), // "Laboratory in charge", as the applicant wrote it
+		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
+	},
+	(t) => [uniqueIndex('facility_members_uq').on(t.facilityId, t.userId), index('facility_members_user_idx').on(t.userId)],
+)
+
+/** What happened to a facility's application. `visible` events (questions, replies, reasons) are shown to the applicant; notes are for reviewers only. */
+export const facilityEvents = mysqlTable(
+	'facility_events',
+	{
+		id: varchar('id', { length: 26 }).primaryKey(),
+		facilityId: varchar('facility_id', { length: 26 }).notNull(),
+		actorId: varchar('actor_id', { length: 26 }),
+		kind: mysqlEnum('kind', ['submitted', 'resubmitted', 'ask', 'reply', 'approve', 'reject', 'suspend', 'reactivate', 'note']).notNull(),
+		how: varchar('how', { length: 80 }), // how the reviewer checked
+		text: text('text'),
+		visible: boolean('visible').notNull().default(false),
+		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
+	},
+	(t) => [index('facility_events_facility_idx').on(t.facilityId, t.createdAt)],
+)

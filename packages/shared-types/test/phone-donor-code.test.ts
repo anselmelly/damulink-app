@@ -28,3 +28,19 @@ describe('donor codes', () => {
 		expect(isDonorCode('DL-0K4Q-2M')).toBe(false)
 	})
 })
+
+import { isFacilityCode, newFacilityCode } from '../src'
+describe('facility codes', () => {
+	it('match FC-XXXX-XX and never use 0 O 1 I L', () => {
+		for (let i = 0; i < 300; i++) {
+			const c = newFacilityCode()
+			expect(isFacilityCode(c)).toBe(true)
+			expect(c.slice(3)).not.toMatch(/[01OIL]/)
+		}
+	})
+	it('are not donor codes, and bad shapes are rejected', () => {
+		expect(isDonorCode(newFacilityCode())).toBe(false)
+		expect(isFacilityCode('FC-R4F2-9K')).toBe(true)
+		for (const bad of ['FC-R4F2-9', 'FC-R4F0-9K', 'DL-R4F2-9K', 'fc-r4f2-9k']) expect(isFacilityCode(bad)).toBe(false)
+	})
+})

@@ -21,3 +21,16 @@ export function resetPasswordMessage(to: string, appUrl: string, token: string):
 export function otpMessage(to: string, code: string): SmsMessage {
 	return { to, text: `${BRAND.name}: your code is ${code}. It works for 10 minutes. Do not share it.` }
 }
+
+/** Tells an applicant what happened to their facility. `text` is the reviewer's reason or question. */
+export function facilityDecisionMessage(to: string, facilityName: string, action: 'approve' | 'reject' | 'ask' | 'suspend' | 'reactivate', text: string | null, appUrl: string): MailMessage {
+	const link = `${appUrl}/facility`
+	const lines: Record<typeof action, [string, string]> = {
+		approve: [`${facilityName} is verified on ${BRAND.name}`, `Good news: ${facilityName} is verified. You are now its admin and can add your attendants.`],
+		reject: [`We could not verify ${facilityName}`, `We could not verify ${facilityName}.${text ? `\n\nReason: ${text}` : ''}\n\nIf the details were wrong, you can correct them and submit again.`],
+		ask: [`A question about ${facilityName}`, `A reviewer has a question about ${facilityName}:\n\n${text ?? ''}\n\nPlease answer in your account so the review can continue.`],
+		suspend: [`${facilityName} is suspended`, `${facilityName} is suspended for now. It cannot publish calls or alert donors. Past records stay safe.`],
+		reactivate: [`${facilityName} is active again`, `${facilityName} is active again and can publish calls.`],
+	}
+	return { to, subject: lines[action][0], text: `${lines[action][1]}\n\n${link}` }
+}

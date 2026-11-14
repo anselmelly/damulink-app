@@ -48,6 +48,14 @@
 			{/if}
 		{/each}
 	</nav>
+	<div class="flex flex-col gap-1 border-t border-rose-100 px-4 pb-2 pt-3">
+		{#if user.managedFacilities.length}<p class="px-3.5 pb-1 text-[11px] font-bold uppercase tracking-[.12em] text-muted">Your facilities</p>{/if}
+		{#each user.managedFacilities as f}
+			<a href="/facility/{f.id}" aria-current={active === `facility-${f.id}` ? 'page' : undefined} class="flex min-h-11 items-center gap-3 rounded-xl px-3.5 py-2 text-[15px] font-semibold hover:bg-rose-50 {active === `facility-${f.id}` ? 'bg-rose-50 text-red-700' : 'text-ink'}"><Icon name="building" /><span class="min-w-0 truncate">{f.name}</span></a>
+		{/each}
+		<a href="/facility/new" class="flex h-11 items-center gap-3 rounded-xl px-3.5 text-[15px] font-semibold text-ink hover:bg-rose-50"><Icon name="plus" />Add a facility</a>
+		{#if user.isSuperAdmin}<a href="/admin/queue" class="flex h-11 items-center gap-3 rounded-xl px-3.5 text-[15px] font-semibold text-red-700 hover:bg-rose-50"><Icon name="shield" />Super admin</a>{/if}
+	</div>
 	<div class="flex flex-col gap-1 border-t border-rose-100 p-4">
 		<a href="/" class="flex h-11 items-center gap-3 rounded-xl px-3.5 text-[15px] font-semibold text-ink hover:bg-rose-50"><Icon name="arrow" />Public site</a>
 		<button type="button" onclick={logout} class="flex h-11 items-center gap-3 rounded-xl px-3.5 text-left text-[15px] font-semibold text-ink hover:bg-rose-50"><Icon name="logout" />Log out</button>

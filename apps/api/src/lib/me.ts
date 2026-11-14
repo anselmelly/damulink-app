@@ -1,6 +1,7 @@
 import { userFacilities, type Db, type User } from '@damu/db'
 import { checkEligibility, maskPhone, type MeResponse } from '@damu/shared-types'
 import { getEligibilitySettings } from './eligibility'
+import { managedFacilities } from './facilities'
 
 export async function toMe(db: Db, u: User, now: Date): Promise<MeResponse> {
 	return {
@@ -16,6 +17,7 @@ export async function toMe(db: Db, u: User, now: Date): Promise<MeResponse> {
 		donorCode: u.donorCode,
 		isSuperAdmin: u.isSuperAdmin,
 		facilities: await userFacilities(db, u),
+		managedFacilities: await managedFacilities(db, u.id),
 		donorStatus: u.bloodType ? 'verified' : 'registered',
 		bloodType: u.bloodType,
 		eligibility: checkEligibility({ sex: u.sex, dateOfBirth: u.dateOfBirth, today: now.toISOString().slice(0, 10), lastDonationOn: u.lastDonationOn, weightKg: u.weightKg, settings: await getEligibilitySettings(db) }),

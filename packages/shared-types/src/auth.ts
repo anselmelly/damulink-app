@@ -39,6 +39,8 @@ export type MeResponse = {
 	donorCode: string | null
 	isSuperAdmin: boolean
 	facilities: { id: string; name: string }[]
+	/** Facilities this person runs (admin) or works at (attendant), whatever their status. */
+	managedFacilities: { id: string; name: string; status: string; role: 'admin' | 'attendant' }[]
 	/** Registered until a facility records a blood type, then Verified. */
 	donorStatus: 'registered' | 'verified'
 	bloodType: string | null

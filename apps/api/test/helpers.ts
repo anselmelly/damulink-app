@@ -38,7 +38,7 @@ export async function json<T = any>(res: Response): Promise<T> {
 /** Empties the tables phase 1 uses. TRUNCATE skips the audit log's delete guard on purpose. */
 export async function resetAccounts({ db }: TestApp) {
 	await db.execute(sql`SET FOREIGN_KEY_CHECKS = 0`)
-	for (const t of ['donor_prefs', 'donation_requests', 'auth_tokens', 'phone_otps', 'users', 'user_extra_facilities', 'facility_requests', 'refresh_tokens', 'rate_limits', 'facilities']) await db.execute(sql.raw(`TRUNCATE TABLE \`${t}\``))
+	for (const t of ['audit_log', 'facility_events', 'facility_members', 'donor_prefs', 'donation_requests', 'auth_tokens', 'phone_otps', 'users', 'user_extra_facilities', 'facility_requests', 'refresh_tokens', 'rate_limits', 'facilities']) await db.execute(sql.raw(`TRUNCATE TABLE \`${t}\``))
 	await db.execute(sql`SET FOREIGN_KEY_CHECKS = 1`)
 }
 
@@ -99,3 +99,35 @@ export async function setDonorFacts(t: TestApp, email: string, facts: Record<str
 	await t.pool.query(`update users set ${sets} where email = ?`, [...Object.values(facts), email])
 }
 export const verifyPhone = (t: TestApp, email: string) => setDonorFacts(t, email, { phone_verified_at: new Date('2026-11-14T07:00:00Z') })
+
+export const makeSuperAdmin = (t: TestApp, email: string) => setDonorFacts(t, email, { is_super_admin: 1 })
+export const verifyEmail = (t: TestApp, email: string) => setDonorFacts(t, email, { email_verified_at: new Date('2026-11-14T07:00:00Z') })
+
+let nf = 0
+export const facilityBody = (over: Record<string, unknown> = {}) => ({
+	name: `Lakeview Hospital ${++nf}`,
+	type: 'hospital',
+	licenseNumber: `KSM-H-${String(1000 + nf)}`,
+	county: 'Kisumu',
+	town: 'Kisumu',
+	lat: -0.0917,
+	lng: 34.768,
+	phone: '+254 57 202 0000',
+	email: `lab${nf}@lakeview.example`,
+	role: 'Medical superintendent',
+	authorised: true,
+	...over,
+})
+/** A signed-up user with a verified email who submits a facility. */
+export async function applicant(t: TestApp, facility: Record<string, unknown> = {}, userOver: Record<string, unknown> = {}) {
+	const s = await signup(t, userOver)
+	await verifyEmail(t, s.input.email)
+	const res = await post(t, '/api/facilities', facilityBody(facility), auth(s.body.accessToken))
+	return { ...s, res, facility: res.status === 201 ? await json(res) : null }
+}
+/** A signed-up super admin. */
+export async function admin(t: TestApp) {
+	const s = await signup(t)
+	await makeSuperAdmin(t, s.input.email)
+	return s
+}

@@ -8,7 +8,9 @@ import { errorHandler, notFound } from './lib/errors'
 import type { Mailer, Sms } from './lib/services'
 import { requestId } from './middleware/request-id'
 import { authRoutes } from './routes/auth'
+import { adminRoutes } from './routes/admin'
 import { facilityRoutes } from './routes/facilities'
+import { myFacilityRoutes } from './routes/my-facilities'
 import { meRoutes } from './routes/me'
 import { verificationRoutes } from './routes/verification'
 
@@ -41,6 +43,8 @@ export function createApp(deps: AppDeps) {
 	app.route('/api/auth', verificationRoutes)
 	app.route('/api/me', meRoutes as unknown as Hono<AppEnv>)
 	app.route('/api/facilities', facilityRoutes)
+	app.route('/api/my-facilities', myFacilityRoutes)
+	app.route('/api/admin', adminRoutes)
 
 	app.onError(errorHandler)
 	app.notFound(notFound)

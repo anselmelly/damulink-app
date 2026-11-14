@@ -11,7 +11,7 @@ const need = (k: string) => {
 	return v
 }
 
-type Seed = { name: string; type: 'hospital' | 'health centre' | 'blood bank'; town: string; county: string; status?: 'verified' | 'pending' }
+type Seed = { name: string; type: 'hospital' | 'health centre' | 'blood bank'; town: string; county: string; status?: 'verified' | 'pending' | 'rejected' }
 const SEED: Seed[] = [
 	{ name: 'Eastlands Hospital', type: 'hospital', town: 'Nairobi', county: 'Nairobi' },
 	{ name: 'Capital Blood Bank', type: 'blood bank', town: 'Nairobi', county: 'Nairobi' },
@@ -22,7 +22,7 @@ const SEED: Seed[] = [
 	{ name: 'Highlands Mission Hospital', type: 'hospital', town: 'Eldoret', county: 'Uasin Gishu' },
 	{ name: 'Mount Valley Health Centre', type: 'health centre', town: 'Nyeri', county: 'Nyeri' },
 	{ name: 'Riverside Health Centre', type: 'health centre', town: 'Thika', county: 'Kiambu' },
-	{ name: 'Sunrise Clinic', type: 'health centre', town: 'Kisii', county: 'Kisii', status: 'pending' }, // not verified: stays out of the public list
+	{ name: 'Sunrise Clinic', type: 'health centre', town: 'Kisii', county: 'Kisii', status: 'rejected' }, // not verified: stays out of the public list and the review queue
 ]
 
 /** A fixed 26-character id per facility, so running the seed again updates rows instead of adding copies. */
