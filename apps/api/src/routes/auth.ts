@@ -1,4 +1,4 @@
-import { Hono } from 'hono'
+import { Hono, type Context } from 'hono'
 import {
 	createUser,
 	donorCodeExists,
@@ -25,6 +25,7 @@ import { isAdult, toMe } from '../lib/me'
 import { hashPassword, verifyPassword } from '../lib/password'
 import { issueSession, sha256 } from '../lib/session'
 import { parseInput, readJson } from '../lib/validate'
+import { startVerification } from '../lib/verification'
 import { requireAuth, type AuthEnv } from '../middleware/auth'
 
 const LOGIN_WINDOW_MS = 15 * 60 * 1000
@@ -82,6 +83,7 @@ authRoutes.post('/signup', async (c) => {
 		throw e
 	}
 	const user = (await findUserById(db, id))!
+	await startVerification(c.var, user, now)
 	const session = await issueSession(db, config.jwtSecret, user, now, { userAgent: c.req.header('User-Agent') })
 	return c.json({ ...session, user: await toMe(db, user, adult) }, 201)
 })
@@ -140,13 +142,10 @@ authRoutes.post('/logout', async (c) => {
 	return c.body(null, 204)
 })
 
-const authed = new Hono<AuthEnv>()
-authed.use('*', requireAuth)
 /** Ends every session: bumps token_version (so live access tokens die at once) and revokes all refresh tokens. */
-authed.post('/logout-all', async (c) => {
+authRoutes.post('/logout-all', requireAuth, async (c: Context<AuthEnv>) => {
 	const { db, clock, user } = c.var
 	await db.update(users).set({ tokenVersion: user.tokenVersion + 1 }).where(eq(users.id, user.id))
 	await revokeAllForUser(db, user.id, clock.now())
 	return c.body(null, 204)
 })
-authRoutes.route('/', authed as unknown as Hono<AppEnv>)

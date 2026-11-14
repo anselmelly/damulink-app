@@ -5,14 +5,16 @@ import { BRAND } from '@damu/shared-types'
 import type { Db } from '@damu/db'
 import { type Clock, systemClock } from './lib/clock'
 import { errorHandler, notFound } from './lib/errors'
+import type { Mailer, Sms } from './lib/services'
 import { requestId } from './middleware/request-id'
 import { authRoutes } from './routes/auth'
 import { facilityRoutes } from './routes/facilities'
 import { meRoutes } from './routes/me'
+import { verificationRoutes } from './routes/verification'
 
-export type AppConfig = { jwtSecret: string; pbkdf2Iterations: number; allowedOrigins: string[] }
-export type AppDeps = { db: Db; config: AppConfig; clock?: Clock }
-export type AppEnv = { Variables: { requestId: string; db: Db; clock: Clock; config: AppConfig } }
+export type AppConfig = { jwtSecret: string; pbkdf2Iterations: number; appUrl: string; allowedOrigins: string[] }
+export type AppDeps = { db: Db; config: AppConfig; mailer: Mailer; sms: Sms; clock?: Clock }
+export type AppEnv = { Variables: { requestId: string; db: Db; clock: Clock; config: AppConfig; mailer: Mailer; sms: Sms } }
 
 export function createApp(deps: AppDeps) {
 	const app = new Hono<AppEnv>()
@@ -23,6 +25,8 @@ export function createApp(deps: AppDeps) {
 		c.set('db', deps.db)
 		c.set('clock', clock)
 		c.set('config', deps.config)
+		c.set('mailer', deps.mailer)
+		c.set('sms', deps.sms)
 		await next()
 	})
 	// X-Auth carries the JWT (never Authorization); browsers must be allowed to send and read it.
@@ -33,6 +37,7 @@ export function createApp(deps: AppDeps) {
 		return c.json({ ok: true, app: BRAND.name, time: clock.now().toISOString() })
 	})
 	app.route('/api/auth', authRoutes)
+	app.route('/api/auth', verificationRoutes)
 	app.route('/api/me', meRoutes as unknown as Hono<AppEnv>)
 	app.route('/api/facilities', facilityRoutes)
 

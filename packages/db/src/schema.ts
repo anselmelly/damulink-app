@@ -98,3 +98,36 @@ export const rateLimits = mysqlTable('rate_limits', {
 	windowStart: datetime('window_start', { fsp: 3 }).notNull(),
 	count: int('count').notNull(),
 })
+
+// ---------- phase 1b: verification and reset ----------
+/** One-use links sent by email: verify the address, or reset the password. Stored hashed. */
+export const authTokens = mysqlTable(
+	'auth_tokens',
+	{
+		id: varchar('id', { length: 26 }).primaryKey(),
+		userId: varchar('user_id', { length: 26 }).notNull(),
+		kind: mysqlEnum('kind', ['verify_email', 'reset_password']).notNull(),
+		tokenHash: varchar('token_hash', { length: 64 }).notNull(),
+		expiresAt: datetime('expires_at', { fsp: 3 }).notNull(),
+		usedAt: datetime('used_at', { fsp: 3 }),
+		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
+	},
+	(t) => [uniqueIndex('auth_tokens_hash_uq').on(t.tokenHash), index('auth_tokens_user_idx').on(t.userId, t.kind)],
+)
+
+/** Six-digit phone codes, stored hashed. Five wrong tries lock the code for 15 minutes. */
+export const phoneOtps = mysqlTable(
+	'phone_otps',
+	{
+		id: varchar('id', { length: 26 }).primaryKey(),
+		userId: varchar('user_id', { length: 26 }).notNull(),
+		phone: varchar('phone', { length: 16 }).notNull(),
+		codeHash: varchar('code_hash', { length: 64 }).notNull(),
+		expiresAt: datetime('expires_at', { fsp: 3 }).notNull(),
+		attempts: int('attempts').notNull().default(0),
+		lockedUntil: datetime('locked_until', { fsp: 3 }),
+		usedAt: datetime('used_at', { fsp: 3 }),
+		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
+	},
+	(t) => [index('phone_otps_user_idx').on(t.userId, t.createdAt)],
+)

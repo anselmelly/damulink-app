@@ -3,6 +3,7 @@ import { sql } from 'drizzle-orm'
 import { createApp } from '../src/app'
 import { type Clock, fixedClock } from '../src/lib/clock'
 import { newId } from '../src/lib/id'
+import { MemoryOutbox, type MailMessage, type SmsMessage } from '../src/lib/services'
 
 export type TestClock = ReturnType<typeof fixedClock>
 export const TEST_SECRET = 'test-secret-test-secret-test-secret-0123456789'
@@ -17,12 +18,16 @@ export function makeTestApp(opts: { clock?: Clock; allowedOrigins?: string[] } =
 		database: process.env.TEST_DB_NAME!,
 	})
 	const clock = (opts.clock as TestClock | undefined) ?? fixedClock('2026-11-14T08:00:00Z')
+	const mail = new MemoryOutbox<MailMessage>()
+	const sms = new MemoryOutbox<SmsMessage>()
 	const app = createApp({
 		db,
 		clock,
-		config: { jwtSecret: TEST_SECRET, pbkdf2Iterations: 1000, allowedOrigins: opts.allowedOrigins ?? ['http://localhost:5173'] },
+		mailer: mail,
+		sms,
+		config: { jwtSecret: TEST_SECRET, pbkdf2Iterations: 1000, appUrl: 'http://localhost:5173', allowedOrigins: opts.allowedOrigins ?? ['http://localhost:5173'] },
 	})
-	return { app, db, pool, clock }
+	return { app, db, pool, clock, mail, sms }
 }
 export type TestApp = ReturnType<typeof makeTestApp>
 
@@ -33,7 +38,7 @@ export async function json<T = any>(res: Response): Promise<T> {
 /** Empties the tables phase 1 uses. TRUNCATE skips the audit log's delete guard on purpose. */
 export async function resetAccounts({ db }: TestApp) {
 	await db.execute(sql`SET FOREIGN_KEY_CHECKS = 0`)
-	for (const t of ['users', 'user_extra_facilities', 'facility_requests', 'refresh_tokens', 'rate_limits', 'facilities']) await db.execute(sql.raw(`TRUNCATE TABLE \`${t}\``))
+	for (const t of ['auth_tokens', 'phone_otps', 'users', 'user_extra_facilities', 'facility_requests', 'refresh_tokens', 'rate_limits', 'facilities']) await db.execute(sql.raw(`TRUNCATE TABLE \`${t}\``))
 	await db.execute(sql`SET FOREIGN_KEY_CHECKS = 1`)
 }
 
@@ -73,3 +78,17 @@ export async function login(t: TestApp, email: string, password: string) {
 	return post(t, '/api/auth/login', { email, password })
 }
 export const auth = (token: string) => ({ 'X-Auth': token })
+
+/** The link token in the most recent email to `to` (or the latest email at all). */
+export function emailToken(t: TestApp, to?: string): string {
+	const m = [...t.mail.sent].reverse().find((x) => !to || x.to === to)
+	const tok = m?.text.match(/token=([\w-]+)/)?.[1]
+	if (!tok) throw new Error('no email token found')
+	return tok
+}
+/** The six-digit code in the most recent SMS. */
+export function smsCode(t: TestApp): string {
+	const code = [...t.sms.sent].reverse()[0]?.text.match(/\b(\d{6})\b/)?.[1]
+	if (!code) throw new Error('no sms code found')
+	return code
+}

@@ -38,3 +38,10 @@ export type MeResponse = {
 	isSuperAdmin: boolean
 	facilities: { id: string; name: string }[]
 }
+
+export const verifyEmailInput = z.object({ token: z.string().min(20).max(100) })
+export const phoneVerifyInput = z.object({ code: z.string().regex(/^\d{6}$/, 'Enter the 6-digit code') })
+export const phoneSendInput = z.object({ phone: phoneField.optional() })
+export const forgotInput = z.object({ email: z.string().trim().toLowerCase().email('Enter a valid email') })
+export const resetInput = z.object({ token: z.string().min(20).max(100), password: passwordField })
+export const changePasswordInput = z.object({ currentPassword: z.string().min(1).max(200), newPassword: passwordField })

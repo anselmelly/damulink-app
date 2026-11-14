@@ -17,6 +17,7 @@ export function loadEnv(src: Record<string, string | undefined> = process.env): 
 		config: {
 			jwtSecret,
 			pbkdf2Iterations: Number(src.PBKDF2_ITERATIONS ?? 310_000),
+			appUrl: (src.APP_URL ?? 'http://localhost:5173').replace(/\/$/, ''),
 			allowedOrigins: (src.ALLOWED_ORIGINS ?? 'http://localhost:5173,http://127.0.0.1:5173').split(',').map((s) => s.trim()),
 		},
 	}

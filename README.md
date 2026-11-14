@@ -23,4 +23,4 @@ Create a local database and a user that may also create `damulink_test_*` databa
 
 ## Status
 
-Phase 0 (foundations) and phase 1a (signup, login, tokens, `/api/me`, facility search) are done. Next: phase 1b (email verification, phone OTP, password reset).
+Done: phase 0 (foundations), phase 1a (signup, login, tokens, `/api/me`, facility search) and phase 1b (email verification, phone codes, password reset and change). Mail and SMS are stand-ins (the dev server prints them; nothing is sent) until a provider is connected. Next: the web screens for auth.
