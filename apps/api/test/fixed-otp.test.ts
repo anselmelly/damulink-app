@@ -16,7 +16,7 @@ describe('OTP_FIXED_CODE (a development aid, refused anywhere else)', () => {
 		expect(() => loadEnv({ ...base, OTP_FIXED_CODE: '123456', NODE_ENV: 'production' })).toThrow(/OTP_FIXED_CODE/)
 	})
 	it('stops the server from starting when the app is not on this machine', () => {
-		expect(() => loadEnv({ ...base, OTP_FIXED_CODE: '123456', APP_URL: 'https://dm.anselmelly.com' })).toThrow(/OTP_FIXED_CODE/)
+		expect(() => loadEnv({ ...base, OTP_FIXED_CODE: '123456', APP_URL: 'https://dl.anselmelly.com' })).toThrow(/OTP_FIXED_CODE/)
 	})
 	it('must be six digits', () => {
 		expect(() => loadEnv({ ...base, OTP_FIXED_CODE: '12ab' })).toThrow(/OTP_FIXED_CODE/)

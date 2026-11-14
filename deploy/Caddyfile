@@ -1,5 +1,5 @@
-# HTTPS is automatic: Caddy gets and renews the certificate once dm.anselmelly.com points at this server.
-dm.anselmelly.com {
+# HTTPS is automatic: Caddy gets and renews the certificate once dl.anselmelly.com points at this server.
+dl.anselmelly.com {
 	encode zstd gzip
 
 	header {

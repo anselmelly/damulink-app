@@ -33,14 +33,14 @@ shared/api.env  web.env  backup.cnf  backups/    never touched by a deploy
 `deploy` user with your key and `/srv/damulink/{releases,shared,incoming}` owned by it; Node 24; MariaDB with a `damulink` database and user;
 Caddy; the three unit files in `/etc/systemd/system` (the two services enabled); `shared/api.env` and `web.env` filled in (mode 600, never printed
 or committed); `shared/backup.cnf` (`[client]` user and password for `mariadb-dump`, mode 600); the sudoers file in `/etc/sudoers.d` (mode 440);
-the Caddyfile in `/etc/caddy`; and a DNS A record for `dm.anselmelly.com` (DNS only, not proxied, so Caddy can get its certificate).
+the Caddyfile in `/etc/caddy`; and a DNS A record for `dl.anselmelly.com` (DNS only, not proxied, so Caddy can get its certificate).
 
 ## Everyday use
 
 ```bash
-deploy/deploy.sh deploy@dm.anselmelly.com          # checks, builds, uploads, switches (stops if a check is red)
+deploy/deploy.sh deploy@dl.anselmelly.com          # checks, builds, uploads, switches (stops if a check is red)
 deploy/build-release.sh                            # just build a release locally
-deploy/deploy.sh deploy@dm.anselmelly.com dist-release/damulink-<stamp>.tar.gz   # upload one you already built
+deploy/deploy.sh deploy@dl.anselmelly.com dist-release/damulink-<stamp>.tar.gz   # upload one you already built
 ```
 
 On the server:

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Deploys a release to the server and switches to it, or rolls back by itself if the new version does not come up healthy.
 #
-#   deploy/deploy.sh deploy@dm.anselmelly.com                    check, build, upload, switch
-#   deploy/deploy.sh deploy@dm.anselmelly.com path/to/release.tar.gz   upload an already built release
+#   deploy/deploy.sh deploy@dl.anselmelly.com                    check, build, upload, switch
+#   deploy/deploy.sh deploy@dl.anselmelly.com path/to/release.tar.gz   upload an already built release
 #
 # The box is small (1 GB), so nothing is built there. Layout on the server (/srv/damulink):
 #   releases/<stamp>/   one folder per release, the last 5 are kept
@@ -13,7 +13,9 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 TARGET="${1:?usage: deploy.sh user@host [release.tar.gz]}"
-SSH=(ssh -o BatchMode=yes -o ConnectTimeout=10 "$TARGET")
+# one connection for every step (one passphrase prompt, and well under the server's ssh rate limit)
+OPTS=(-o ConnectTimeout=10 -o ControlMaster=auto -o "ControlPath=/tmp/damulink-deploy-%C" -o ControlPersist=120)
+SSH=(ssh "${OPTS[@]}" "$TARGET")
 ROOT=/srv/damulink
 
 if [[ -n "${2:-}" ]]; then
@@ -28,7 +30,7 @@ NAME="$(basename "$TARBALL" .tar.gz)"
 
 echo "==> uploading $NAME"
 "${SSH[@]}" "mkdir -p $ROOT/incoming $ROOT/releases"
-scp -q -o BatchMode=yes "$TARBALL" "$TARGET:$ROOT/incoming/"
+scp -q "${OPTS[@]}" "$TARBALL" "$TARGET:$ROOT/incoming/"
 
 echo "==> installing on the server"
 # the quoted heredoc is sent as is; NAME and ROOT arrive as arguments
