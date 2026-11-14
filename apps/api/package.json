@@ -1,0 +1,25 @@
+{
+	"name": "@damu/api",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "node --env-file=../../.env --watch --import tsx src/server.ts",
+		"check": "tsc --noEmit",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@damu/db": "workspace:*",
+		"@damu/shared-types": "workspace:*",
+		"@hono/node-server": "^1.14.0",
+		"drizzle-orm": "^0.44.7",
+		"hono": "^4.7.0",
+		"mysql2": "^3.24.6"
+	},
+	"devDependencies": {
+		"@types/node": "^22.0.0",
+		"tsx": "^4.19.0",
+		"typescript": "^5.7.0",
+		"vitest": "^3.0.0"
+	}
+}

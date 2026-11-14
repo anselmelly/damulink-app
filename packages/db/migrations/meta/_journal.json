@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1794658269219,
+      "tag": "0000_foundations",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1794658270291,
+      "tag": "0001_audit_append_only",
+      "breakpoints": true
+    }
+  ]
+}
