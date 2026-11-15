@@ -24,7 +24,7 @@ Create a local database and a user that may also create `damulink_test_*` databa
 
 ## Try the demo
 
-The demo server at https://dl.anselmelly.com has invented data only (emails end in `@demo.example`). Nothing real is stored there. The password is not in this repository; it is given with the submission.
+The demo server at https://dl.anselmelly.com has invented data only (emails end in `@demo.example`). Nothing real is stored there. The password and a walk-through are in [docs/demo-guide.md](docs/demo-guide.md).
 
 | Role | Email | What to look at |
 |---|---|---|

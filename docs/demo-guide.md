@@ -2,7 +2,7 @@
 
 A five-minute walk through DamuLink on the demo server (https://dl.anselmelly.com). All people, facilities and numbers are invented. No SMS or email reaches anyone real.
 
-**Password for every demo account: `<PASSWORD>`** (given with the submission; it is not kept in git).
+**Password for every demo account: `WHQ8ucFhQRdL`** (demo data only; it protects nothing real).
 
 | Role | Sign in with |
 |---|---|
