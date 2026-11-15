@@ -22,6 +22,6 @@
 	<p class="relative mt-1 text-[14px] text-white/90">Hosted with {facility}</p>
 	<div class="relative mt-4 flex items-center gap-4 rounded-2xl bg-white p-4 text-ink">
 		{#if qr}<span class="h-24 w-24 shrink-0 [&>svg]:h-full [&>svg]:w-full" role="img" aria-label="QR code for the drive page">{@html qr}</span>{/if}
-		<span class="min-w-0"><span class="block text-[14px] font-semibold">Scan, or say you are interested</span><span class="block break-all text-xl font-extrabold text-red-700">{shown}</span></span>
+		<span class="min-w-0"><span class="block text-[14px] font-semibold">Scan, or say you are interested</span><span class="block break-all text-[17px] font-extrabold leading-6 text-red-700">{shown}</span></span>
 	</div>
 </div>

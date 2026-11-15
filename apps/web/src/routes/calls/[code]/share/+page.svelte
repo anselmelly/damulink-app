@@ -11,6 +11,7 @@
 	let copied = $state(false)
 	const link = $derived(shortLink(page.url.origin, c.short))
 	const shown = $derived(link.replace(/^https?:\/\//, ''))
+	const linkSize = $derived(Math.min(76, Math.floor(860 / (0.6 * shown.length)))) // keeps the link inside the 940-wide white box
 	const wa = $derived(`https://wa.me/?text=${encodeURIComponent(`${c.bloodType} blood needed at ${c.facility.name}, ${c.facility.town}. ${link}`)}`)
 	const SHAPES = { square: { w: 1080, h: 1080, ty: 400, by: 520, fy: 600, ly: 670, box: 750 }, story: { w: 1080, h: 1920, ty: 740, by: 860, fy: 940, ly: 1010, box: 1520 } } as const
 	type Shape = keyof typeof SHAPES
@@ -65,7 +66,7 @@
 						{#each lines as ln, i}<text x="70" y={sh.ly + i * 52} font-size="38" opacity=".92">{ln}</text>{/each}
 						<rect x="70" y={sh.box} width="940" height="230" rx="36" fill="#fff" />
 						<text x="540" y={sh.box + 80} font-size="38" font-weight="600" text-anchor="middle" fill="#2b1014">Can you help? Please share, or open</text>
-						<text x="540" y={sh.box + 170} font-size="76" font-weight="800" text-anchor="middle" fill="#b91c1c">{shown}</text>
+						<text x="540" y={sh.box + 170} font-size={linkSize} font-weight="800" text-anchor="middle" fill="#b91c1c">{shown}</text>
 					</g>
 				</svg>
 				<p class="flex items-center justify-between text-[15px]"><span class="font-bold">{l}</span><span class="text-muted">{d}</span></p>
