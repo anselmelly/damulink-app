@@ -1,9 +1,18 @@
 <script lang="ts">
 	import { BRAND } from '$lib/brand'
+	import { urgencyLabel } from '$lib/calls'
+	import { ago } from '$lib/requests'
+	import CallCard from '$lib/ui/CallCard.svelte'
 	import Icon from '$lib/ui/Icon.svelte'
 	import PublicFooter from '$lib/ui/PublicFooter.svelte'
 	import PublicNav from '$lib/ui/PublicNav.svelte'
 
+	let { data } = $props()
+	const first = $derived(data.calls[0])
+	const since = (iso: string) => {
+		const t = ago(iso)
+		return t === 'Yesterday' || t.endsWith('ago') ? t : `${t} ago`
+	}
 	const steps = [
 		{ icon: 'building', title: 'A verified medical facility raises a call', text: 'Families can ask on a patient’s behalf. The facility confirms the admission and the blood type before anything is shared.' },
 		{ icon: 'message', title: 'Matching donors get an SMS', text: 'Only donors who opted in, whose blood type fits and who are likely eligible today, starting from the facility’s own donors.' },
@@ -36,14 +45,26 @@
 				</div>
 				<p class="flex items-center gap-2 text-sm"><Icon name="shield" class="h-5 w-5" />Only verified medical facilities can post. Patient details are never shown publicly.</p>
 			</div>
-			<div class="rounded-3xl bg-white p-6 text-ink shadow-2xl shadow-rose-900/30 md:p-8">
-				<p class="eyebrow">How a call works</p>
-				<ol class="mt-4 flex flex-col gap-4">
-					{#each steps as s, i}
-						<li class="flex items-start gap-4"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rose-100 text-sm font-extrabold text-red-700">{i + 1}</span><span class="text-[15px] leading-[22px]">{s.title}</span></li>
-					{/each}
-				</ol>
-			</div>
+			{#if first}
+				<div class="flex flex-col gap-5 rounded-3xl bg-white p-6 text-ink shadow-2xl shadow-rose-900/30 md:p-8">
+					<div class="flex items-center justify-between gap-3"><span class="badge {first.urgency !== 'normal' ? 'badge-urgent' : 'badge-soft'}">{first.urgency !== 'normal' ? urgencyLabel(first.urgency) : 'Normal'}</span><span class="text-[13px] text-muted">Posted {since(first.publishedAt)}</span></div>
+					<div class="flex items-center gap-5">
+						<span class="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-[34px] font-extrabold leading-none text-rose-600">{first.bloodType}</span>
+						<div><p class="text-2xl font-extrabold leading-8">Blood needed</p><p class="flex items-center gap-1 text-[15px] text-muted"><Icon name="pin" class="h-4 w-4" />{first.facility.name}, {first.facility.town}</p></div>
+					</div>
+					<p class="text-[15px] leading-[22px]">{first.publicText}</p>
+					<div class="grid grid-cols-2 gap-3"><a href="/calls/{first.code}/share" class="btn-primary flex items-center justify-center gap-2"><Icon name="share" class="h-5 w-5" />Share</a><a href="/calls/{first.code}" class="btn-secondary">View call</a></div>
+				</div>
+			{:else}
+				<div class="rounded-3xl bg-white p-6 text-ink shadow-2xl shadow-rose-900/30 md:p-8">
+					<p class="eyebrow">How a call works</p>
+					<ol class="mt-4 flex flex-col gap-4">
+						{#each steps as s, i}
+							<li class="flex items-start gap-4"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rose-100 text-sm font-extrabold text-red-700">{i + 1}</span><span class="text-[15px] leading-[22px]">{s.title}</span></li>
+						{/each}
+					</ol>
+				</div>
+			{/if}
 		</div>
 	</section>
 
@@ -63,21 +84,15 @@
 		</div>
 	</section>
 
-	<section class="bg-rose-50 py-16 md:py-24">
-		<div class="mx-auto max-w-6xl px-6">
-			<p class="eyebrow">Built on trust</p>
-			<h2 class="mt-2 max-w-2xl text-[30px] font-extrabold leading-9 tracking-tight md:text-[40px] md:leading-[46px]">Private, checked, and in your control</h2>
-			<ul class="mt-10 grid gap-5 md:grid-cols-3">
-				{#each trust as t}
-					<li class="card flex flex-col gap-4 p-6">
-						<span class="path-icon"><Icon name={t.icon} class="h-[26px] w-[26px]" /></span>
-						<h3 class="text-xl font-bold leading-7">{t.title}</h3>
-						<p class="text-[15px] leading-[22px] text-muted">{t.text}</p>
-					</li>
-				{/each}
-			</ul>
-		</div>
-	</section>
+	{#if data.calls.length}
+		<section class="bg-rose-50 py-16 md:py-24">
+			<div class="mx-auto max-w-6xl px-6">
+				<div class="flex items-end justify-between gap-4"><div><p class="eyebrow">Calls for blood</p><h2 class="mt-2 text-[30px] font-extrabold leading-9 tracking-tight md:text-[40px] md:leading-[46px]">Open right now</h2></div><a href="/calls" class="link flex items-center gap-1 text-[15px]">See all calls<Icon name="arrow" class="h-5 w-5" /></a></div>
+				<div class="mt-8 grid gap-5 md:grid-cols-3">{#each data.calls as c}<CallCard {c} home />{/each}</div>
+			</div>
+		</section>
+	{/if}
+
 
 	<section id="facilities" class="scroll-mt-20 bg-rose-600 py-16 text-white md:py-20">
 		<div class="mx-auto flex max-w-6xl flex-col gap-6 px-6 md:flex-row md:items-center md:justify-between">
@@ -89,9 +104,23 @@
 		</div>
 	</section>
 
-	<section class="bg-white py-16 text-center md:py-24">
-		<h2 class="mx-auto max-w-4xl px-6 text-[40px] font-extrabold leading-[46px] tracking-tight md:text-[64px] md:leading-[70px]">{BRAND.slogan}</h2>
-		<a href="/create-account" class="btn-primary mx-auto mt-8 !w-auto px-8">Create an account</a>
+	<section class="bg-white py-16 md:py-20">
+		<div class="mx-auto max-w-6xl px-6">
+			<p class="eyebrow">Built on trust</p>
+			<ul class="mt-6 grid gap-8 md:grid-cols-3">
+				{#each trust as t}
+					<li class="flex items-start gap-4"><span class="path-icon"><Icon name={t.icon} class="h-[26px] w-[26px]" /></span><div><h3 class="text-xl font-bold leading-7">{t.title}</h3><p class="mt-1 text-[15px] leading-[22px] text-muted">{t.text}</p></div></li>
+				{/each}
+			</ul>
+		</div>
+	</section>
+
+	<section class="relative overflow-hidden bg-rose-600 py-16 text-white md:py-24">
+		<svg aria-hidden="true" viewBox="0 0 24 24" fill="#fff" class="pointer-events-none absolute -bottom-24 right-10 h-[520px] w-[420px] opacity-[0.1]"><path d="M12 2.6c-3.9 4.7-6.4 8.2-6.4 11.3a6.4 6.4 0 0 0 12.8 0c0-3.1-2.5-6.6-6.4-11.3z" /></svg>
+		<div class="relative mx-auto flex max-w-6xl flex-col gap-8 px-6">
+			<h2 class="text-[44px] font-extrabold leading-[50px] tracking-tight md:text-[72px] md:leading-[78px]">{BRAND.slogan}</h2>
+			<div class="flex flex-col gap-3 sm:flex-row"><a href="/create-account" class="btn-light sm:min-w-[210px]">Become a donor</a><a href="/create-account" class="flex h-[52px] items-center justify-center rounded-xl border-[1.5px] border-white/70 px-6 text-base font-bold text-white hover:bg-white/10">Request blood for someone</a></div>
+		</div>
 	</section>
 </main>
 

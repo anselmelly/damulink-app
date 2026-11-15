@@ -4,7 +4,7 @@
 	import { ago } from '$lib/requests'
 	import type { PublicCall } from '@damu/shared-types'
 
-	let { c }: { c: PublicCall } = $props()
+	let { c, home = false }: { c: PublicCall; home?: boolean } = $props()
 	/** "3 hours ago", "Yesterday", "2 days ago". */
 	const since = (iso: string) => {
 		const t = ago(iso)
@@ -22,8 +22,8 @@
 		<div class="min-w-0"><p class="text-lg font-bold leading-6">{c.facility.name}</p><p class="text-[15px] text-muted">{c.facility.town}</p></div>
 	</div>
 	<p class="text-[15px] leading-[22px]">{c.publicText}</p>
-	<div class="mt-auto grid grid-cols-2 gap-3">
+	<div class="mt-auto grid {home ? '' : 'grid-cols-2'} gap-3">
 		<a href="/calls/{c.code}/share" class="btn-secondary flex items-center justify-center gap-2 !h-11"><Icon name="share" class="h-5 w-5" />Share</a>
-		<a href="/calls/{c.code}" class="btn-primary !h-11">Details</a>
+		{#if !home}<a href="/calls/{c.code}" class="btn-primary !h-11">Details</a>{/if}
 	</div>
 </article>
