@@ -67,7 +67,7 @@
 
 <svelte:head><title>Request blood | {BRAND.name}</title></svelte:head>
 
-<AccountShell active="requests">
+<AccountShell active="request">
 	<header class="flex flex-col gap-1.5">
 		<h1 class="text-[30px] font-extrabold leading-9 tracking-tight md:text-[38px] md:leading-[44px]">Request blood for someone</h1>
 		<p class="max-w-2xl text-base leading-6 text-muted">Tell a medical facility about a patient who needs blood. Their attendants will check with the ward, then decide whether to share a call.</p>
