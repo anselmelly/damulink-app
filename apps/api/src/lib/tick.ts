@@ -3,6 +3,7 @@ import type { AppConfig } from '../app'
 import { runAlerts } from './alerts'
 import { runAllDriveAlerts, sweepDrives } from './drives'
 import { expireCalls } from './calls'
+import { runFlagRules } from './flags'
 import type { Sms } from './services'
 
 /** The scheduled work: close calls whose time is up, then send whatever alerts are due. Safe to run as often and from as many places as you like. */
@@ -12,5 +13,6 @@ export async function runTick(db: Db, sms: Sms, config: AppConfig, now: Date) {
 	for (const c of await liveSmsCalls(db)) alerted += await runAlerts(db, sms, config, c, now)
 	alerted += await runAllDriveAlerts(db, sms, config, now)
 	const driveClosed = await sweepDrives(db, now)
-	return { expired, alerted, driveClosed }
+	const flagged = await runFlagRules(db, now)
+	return { expired, alerted, driveClosed, flagged }
 }
