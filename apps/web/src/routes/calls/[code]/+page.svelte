@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { auth } from '$lib/auth.svelte'
 	import { BRAND } from '$lib/brand'
 	import { closesOn, shortLink, urgencyLabel } from '$lib/calls'
 	import { sentAt } from '$lib/requests'
@@ -51,7 +52,7 @@
 						<li class="flex gap-4"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rose-100 font-bold text-red-700">2</span><span><b>Already a donor?</b> If you got our SMS, reply YES and the facility will call you.</span></li>
 						<li class="flex gap-4"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rose-100 font-bold text-red-700">3</span><span><b>New here?</b> Join {BRAND.name} to be matched to calls like this one, and texted only when it fits you.</span></li>
 					</ol>
-					<div class="grid gap-3 sm:grid-cols-2"><a href="/create-account" class="btn-primary">Become a donor</a><a href="/login" class="btn-secondary">Log in</a></div>
+					{#if auth.user}<a href="/calls-for-you" class="btn-primary">Calls for you</a>{:else}<div class="grid gap-3 sm:grid-cols-2"><a href="/create-account" class="btn-primary">Become a donor</a><a href="/login" class="btn-secondary">Log in</a></div>{/if}
 				</section>
 			{/if}
 		</div>

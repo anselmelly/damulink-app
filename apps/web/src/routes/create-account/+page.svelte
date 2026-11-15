@@ -101,6 +101,11 @@
 
 	const stepClass = (n: 1 | 2) => (n <= step ? 'border-rose-600' : 'border-rose-200')
 	const numClass = (n: 1 | 2) => (n === step ? 'bg-rose-600 text-white' : n < step ? 'bg-rose-100 text-red-700' : 'border-[1.5px] border-rose-200 text-muted')
+	// already signed in: there is nothing to do here
+	onMount(async () => {
+		await auth.init()
+		if (auth.user) await goto('/dashboard', { replaceState: true })
+	})
 </script>
 
 <svelte:head><title>Create account | {BRAND.name}</title></svelte:head>

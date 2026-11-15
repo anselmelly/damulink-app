@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte'
 	import { goto } from '$app/navigation'
 	import { page } from '$app/state'
 	import { auth } from '$lib/auth.svelte'
@@ -34,6 +35,11 @@
 			busy = false
 		}
 	}
+	// already signed in: there is nothing to do here
+	onMount(async () => {
+		await auth.init()
+		if (auth.user) await goto('/dashboard', { replaceState: true })
+	})
 </script>
 
 <svelte:head><title>Log in | {BRAND.name}</title></svelte:head>

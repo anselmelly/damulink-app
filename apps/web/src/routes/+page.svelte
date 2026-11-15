@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { auth } from '$lib/auth.svelte'
 	import { BRAND } from '$lib/brand'
 	import { urgencyLabel } from '$lib/calls'
 	import { ago } from '$lib/requests'
@@ -42,8 +43,8 @@
 				<h1 class="text-[38px] font-extrabold leading-[44px] tracking-tight md:text-[56px] md:leading-[62px]">When someone needs blood, the right donors hear first.</h1>
 				<p class="max-w-xl text-lg leading-7 md:text-xl md:leading-8">{BRAND.name} connects verified medical facilities, donors, and families. Medical facilities raise a call, matching donors nearby get an SMS, and you reply YES if you can come.</p>
 				<div class="flex flex-col gap-3 sm:flex-row">
-					<a href="/create-account" class="btn-light sm:min-w-[210px]">Become a donor</a>
-					<a href="/create-account" class="flex h-[52px] items-center justify-center gap-2 rounded-xl border-[1.5px] border-white/70 px-6 text-base font-bold text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300">Request blood for someone</a>
+					<a href={auth.user ? '/dashboard' : '/create-account'} class="btn-light sm:min-w-[210px]">{auth.user ? 'Go to my account' : 'Become a donor'}</a>
+					<a href={auth.user ? '/request' : '/create-account'} class="flex h-[52px] items-center justify-center gap-2 rounded-xl border-[1.5px] border-white/70 px-6 text-base font-bold text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300">Request blood for someone</a>
 				</div>
 				<p class="flex items-center gap-2 text-sm"><Icon name="shield" class="h-5 w-5" />Only verified medical facilities can post. Patient details are never shown publicly.</p>
 			</div>
@@ -134,7 +135,7 @@
 		<svg aria-hidden="true" viewBox="0 0 24 24" fill="#fff" class="pointer-events-none absolute -bottom-24 right-10 h-[520px] w-[420px] opacity-[0.1]"><path d="M12 2.6c-3.9 4.7-6.4 8.2-6.4 11.3a6.4 6.4 0 0 0 12.8 0c0-3.1-2.5-6.6-6.4-11.3z" /></svg>
 		<div class="relative mx-auto flex max-w-6xl flex-col gap-8 px-6">
 			<h2 class="text-[44px] font-extrabold leading-[50px] tracking-tight md:text-[72px] md:leading-[78px]">{BRAND.slogan}</h2>
-			<div class="flex flex-col gap-3 sm:flex-row"><a href="/create-account" class="btn-light sm:min-w-[210px]">Become a donor</a><a href="/create-account" class="flex h-[52px] items-center justify-center rounded-xl border-[1.5px] border-white/70 px-6 text-base font-bold text-white hover:bg-white/10">Request blood for someone</a></div>
+			<div class="flex flex-col gap-3 sm:flex-row"><a href={auth.user ? '/dashboard' : '/create-account'} class="btn-light sm:min-w-[210px]">{auth.user ? 'Go to my account' : 'Become a donor'}</a><a href={auth.user ? '/request' : '/create-account'} class="flex h-[52px] items-center justify-center rounded-xl border-[1.5px] border-white/70 px-6 text-base font-bold text-white hover:bg-white/10">Request blood for someone</a></div>
 		</div>
 	</section>
 </main>
