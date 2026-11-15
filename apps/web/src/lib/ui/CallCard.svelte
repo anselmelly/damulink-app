@@ -1,5 +1,4 @@
 <script lang="ts">
-	import BloodChip from './BloodChip.svelte'
 	import Icon from './Icon.svelte'
 	import { urgencyLabel } from '$lib/calls'
 	import { ago } from '$lib/requests'
@@ -13,12 +12,18 @@
 	}
 </script>
 
-<article class="card flex flex-col gap-3 p-5">
+<article class="card flex flex-col gap-4 p-5">
 	<div class="flex items-center justify-between gap-3">
-		{#if c.urgency !== 'normal'}<span class="badge badge-urgent">{urgencyLabel(c.urgency)}</span>{:else}<span class="badge badge-soft">Open call</span>{/if}
+		<span class="badge {c.urgency !== 'normal' ? 'badge-urgent' : 'badge-soft'}">{c.urgency !== 'normal' ? urgencyLabel(c.urgency) : 'Normal'}</span>
 		<span class="text-[13px] text-muted">{since(c.publishedAt)}</span>
 	</div>
-	<div class="flex items-center gap-3"><BloodChip type={c.bloodType} /><div class="min-w-0"><p class="truncate font-bold">{c.facility.name}</p><p class="flex items-center gap-1 text-[14px] text-muted"><Icon name="pin" class="h-4 w-4" />{c.facility.town}</p></div></div>
+	<div class="flex items-center gap-4">
+		<span class="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-[28px] font-extrabold leading-none text-rose-600" aria-label="Blood type {c.bloodType}">{c.bloodType}</span>
+		<div class="min-w-0"><p class="text-lg font-bold leading-6">{c.facility.name}</p><p class="text-[15px] text-muted">{c.facility.town}</p></div>
+	</div>
 	<p class="text-[15px] leading-[22px]">{c.publicText}</p>
-	<a href="/calls/{c.code}" class="btn-secondary !h-11 self-start sm:!w-auto sm:px-6">Details</a>
+	<div class="mt-auto grid grid-cols-2 gap-3">
+		<a href="/calls/{c.code}/share" class="btn-secondary flex items-center justify-center gap-2 !h-11"><Icon name="share" class="h-5 w-5" />Share</a>
+		<a href="/calls/{c.code}" class="btn-primary !h-11">Details</a>
+	</div>
 </article>
