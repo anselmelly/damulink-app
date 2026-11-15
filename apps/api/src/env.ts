@@ -1,8 +1,9 @@
 import type { DbConfig } from '@damu/db'
-import { normalizePhone } from '@damu/shared-types'
+import { BRAND, normalizePhone } from '@damu/shared-types'
 import type { AppConfig } from './app'
+import type { MailgunConfig } from './lib/mailgun'
 
-export type Env = { db: DbConfig; config: AppConfig }
+export type Env = { db: DbConfig; config: AppConfig; mailgun?: MailgunConfig }
 
 /** Reads the process environment once at start. A missing or weak value stops the server at boot, not on the first request. */
 export function loadEnv(src: Record<string, string | undefined> = process.env): Env {
@@ -29,7 +30,15 @@ export function loadEnv(src: Record<string, string | undefined> = process.env): 
 		if (!local && src.OTP_FIXED_ALLOW_SERVER !== 'yes') throw new Error('OTP_FIXED_CODE on a server needs OTP_FIXED_ALLOW_SERVER=yes (anyone who knows the code can verify any phone)')
 		console.warn(`OTP_FIXED_CODE is set: phone codes are fixed${fixedOtpPhones ? ` for ${fixedOtpPhones.length} listed number(s) only` : ' for EVERY number'}. Testing only.`)
 	}
+	// Mail goes through Mailgun when a key and a domain are set; otherwise it is only logged (see server.ts).
+	let mailgun: MailgunConfig | undefined
+	if (src.MAILGUN_API_KEY && src.MAILGUN_DOMAIN) {
+		const region = (src.MAILGUN_REGION || 'us').toLowerCase()
+		if (region !== 'us' && region !== 'eu') throw new Error('MAILGUN_REGION must be us or eu')
+		mailgun = { apiKey: src.MAILGUN_API_KEY, domain: src.MAILGUN_DOMAIN, region, from: src.MAIL_FROM || `${BRAND.name} <noreply@${src.MAILGUN_DOMAIN}>` }
+	}
 	return {
+		mailgun,
 		db: { host: need('DB_HOST'), port: Number(src.DB_PORT ?? 3306), user: need('DB_USER'), password: need('DB_PASSWORD'), database: need('DB_NAME') },
 		config: {
 			cronKey: src.CRON_KEY || undefined,

@@ -14,7 +14,7 @@ cd "$(dirname "$0")/.."
 
 TARGET="${1:?usage: deploy.sh user@host [release.tar.gz]}"
 # one connection for every step (one passphrase prompt, and well under the server's ssh rate limit)
-OPTS=(-o ConnectTimeout=10 -o ControlMaster=auto -o "ControlPath=/tmp/damulink-deploy-%C" -o ControlPersist=120)
+OPTS=(-o ConnectTimeout=10 -o ServerAliveInterval=5 -o ServerAliveCountMax=3 -o ControlMaster=auto -o "ControlPath=/tmp/damulink-deploy-%C" -o ControlPersist=120)
 SSH=(ssh "${OPTS[@]}" "$TARGET")
 ROOT=/srv/damulink
 
@@ -29,6 +29,9 @@ fi
 NAME="$(basename "$TARBALL" .tar.gz)"
 
 echo "==> uploading $NAME"
+# start from a clean connection: a leftover one (from a stopped deploy) can hang the first step
+ssh -O exit "${OPTS[@]}" "$TARGET" 2>/dev/null || true
+echo "    connecting to $TARGET (if nothing happens: ssh-add your key first, a hidden passphrase window looks like a hang)"
 "${SSH[@]}" "mkdir -p $ROOT/incoming $ROOT/releases"
 scp -q "${OPTS[@]}" "$TARBALL" "$TARGET:$ROOT/incoming/"
 
