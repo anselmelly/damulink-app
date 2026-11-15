@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { LOGO_INNER, LOGO_VIEWBOX } from '$lib/logo'
 	import { page } from '$app/state'
 	import { BRAND } from '$lib/brand'
 	import { shortLink, urgencyLabel } from '$lib/calls'
@@ -58,7 +59,7 @@
 					<rect width={sh.w} height={sh.h} fill="#e11d48" />
 					<path transform="translate({sh.w - 80} {sh.ty - 330}) scale(1.7)" d="M0 0c-110 140-190 240-190 330a190 190 0 0 0 380 0c0-90-80-190-190-330z" fill="#fff" opacity=".14" />
 					<g font-family="system-ui, sans-serif" fill="#fff">
-						<text x="70" y="130" font-size="68" font-weight="800">{BRAND.name}</text>
+						<svg x="70" y="66" width="340" height="73" viewBox={LOGO_VIEWBOX} style="color:#fff" role="img" aria-label={BRAND.name}>{@html LOGO_INNER}</svg>
 						{#if c.urgency !== 'normal'}<rect x="780" y="76" width="230" height="70" rx="35" fill="#fff" /><text x="895" y="124" font-size="34" font-weight="800" letter-spacing="3" text-anchor="middle" fill="#b91c1c">{urgencyLabel(c.urgency).toUpperCase()}</text>{/if}
 						<text x="70" y={sh.ty} font-size="270" font-weight="800">{c.bloodType}</text>
 						<text x="70" y={sh.by} font-size="76" font-weight="800">Blood needed</text>

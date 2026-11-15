@@ -5,6 +5,7 @@
 	import { sentAt } from '$lib/requests'
 	import BloodChip from '$lib/ui/BloodChip.svelte'
 	import Icon from '$lib/ui/Icon.svelte'
+	import Logo from '$lib/ui/Logo.svelte'
 	import PublicFooter from '$lib/ui/PublicFooter.svelte'
 	import PublicNav from '$lib/ui/PublicNav.svelte'
 	import { page } from '$app/state'
@@ -60,7 +61,7 @@
 			<aside class="flex flex-col gap-3 lg:sticky lg:top-6">
 				<div class="relative overflow-hidden rounded-3xl bg-rose-600 p-6 text-white shadow-lg">
 					<svg aria-hidden="true" viewBox="0 0 24 24" fill="#fff" class="pointer-events-none absolute -right-12 top-16 h-[330px] w-[270px] opacity-[.16]"><path d="M12 2.6c-3.9 4.7-6.4 8.2-6.4 11.3a6.4 6.4 0 0 0 12.8 0c0-3.1-2.5-6.6-6.4-11.3z" /></svg>
-					<div class="relative flex items-center justify-between"><span class="text-[26px] font-extrabold tracking-tight">{BRAND.name}</span>{#if c.urgency !== 'normal'}<span class="rounded-full bg-white px-4 py-1 text-[13px] font-extrabold uppercase tracking-widest text-red-700">{urgencyLabel(c.urgency)}</span>{/if}</div>
+					<div class="relative flex items-center justify-between"><Logo class="h-8" />{#if c.urgency !== 'normal'}<span class="rounded-full bg-white px-4 py-1 text-[13px] font-extrabold uppercase tracking-widest text-red-700">{urgencyLabel(c.urgency)}</span>{/if}</div>
 					<p class="relative mt-2 text-[88px] font-extrabold leading-none">{c.bloodType}</p>
 					<p class="relative mt-5 text-[28px] font-extrabold leading-8">Blood needed</p>
 					<p class="relative mt-3 text-lg font-bold">{c.facility.name}, {c.facility.town}</p>
