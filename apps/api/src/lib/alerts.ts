@@ -14,16 +14,16 @@ const nairobiHour = (d: Date) => (d.getUTCHours() + 3) % 24
  * Donors who can be alerted for a call at `facilityId`, each with their ring (1 to 3).
  * `limits: false` counts the whole audience (the preview); true also holds back weekly-cap and quiet-hour donors on a normal call.
  */
-export async function matchDonors(db: Db, o: { facilityId: string; types: string[]; urgency: string; callId?: string; now: Date; limits: boolean }) {
+export async function matchDonors(db: Db, o: { facilityId: string; types: string[]; urgency: string; callId?: string; skip?: Set<string>; onDay?: string; now: Date; limits: boolean }) {
 	const target = await getFacility(db, o.facilityId)
 	if (!target) return []
 	const km = { ring2Km: await numberSetting(db, 'rings.ring2_km', RING_DEFAULTS.ring2Km), ring3Km: await numberSetting(db, 'rings.ring3_km', RING_DEFAULTS.ring3Km) }
 	const [rows, elig, sys] = [await candidateDonors(db, o.types), await getEligibilitySettings(db), await getAlertLimits(db)]
-	const done = o.callId ? await alertedUserIds(db, o.callId) : new Set<string>()
+	const done = o.skip ?? (o.callId ? await alertedUserIds(db, o.callId) : new Set<string>())
 	const places = await donorPlaces(db, rows.map((r) => r.u.id))
 	const applyLimits = o.limits && o.urgency === 'normal'
 	const sent = applyLimits ? await sentSince(db, rows.map((r) => r.u.id), new Date(o.now.getTime() - 7 * 86_400_000)) : new Map<string, number>()
-	const today = o.now.toISOString().slice(0, 10)
+	const today = o.onDay ?? o.now.toISOString().slice(0, 10) // a drive asks who will be eligible on its day
 	const held = await heldUserIds(db, rows.map((r) => r.u.id), today)
 	const out: { user: (typeof rows)[number]['u']; ring: 1 | 2 | 3 }[] = []
 	for (const { u, p } of rows) {

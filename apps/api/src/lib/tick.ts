@@ -1,6 +1,7 @@
 import { liveSmsCalls, type Db } from '@damu/db'
 import type { AppConfig } from '../app'
 import { runAlerts } from './alerts'
+import { runAllDriveAlerts } from './drives'
 import { expireCalls } from './calls'
 import type { Sms } from './services'
 
@@ -9,5 +10,6 @@ export async function runTick(db: Db, sms: Sms, config: AppConfig, now: Date) {
 	const expired = await expireCalls(db, now, sms)
 	let alerted = 0
 	for (const c of await liveSmsCalls(db)) alerted += await runAlerts(db, sms, config, c, now)
+	alerted += await runAllDriveAlerts(db, sms, config, now)
 	return { expired, alerted }
 }

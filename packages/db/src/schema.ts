@@ -394,6 +394,7 @@ export const visits = mysqlTable(
 		donationId: varchar('donation_id', { length: 26 }),
 		callId: varchar('call_id', { length: 26 }),
 		appointmentId: varchar('appointment_id', { length: 26 }),
+		driveId: varchar('drive_id', { length: 26 }),
 		returnAfter: date('return_after', { mode: 'string' }), // a deferral's "pause alerts until" date
 		recordedBy: varchar('recorded_by', { length: 26 }).notNull(),
 		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
@@ -432,6 +433,7 @@ export const walkinVisits = mysqlTable(
 		bloodType: mysqlEnum('blood_type', ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+']),
 		outcome: mysqlEnum('outcome', ['donated', 'test', 'deferred']).notNull(),
 		bagNumber: varchar('bag_number', { length: 40 }),
+		driveId: varchar('drive_id', { length: 26 }),
 		invitePhone: varchar('invite_phone', { length: 16 }),
 		recordedBy: varchar('recorded_by', { length: 26 }).notNull(),
 		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
@@ -456,4 +458,67 @@ export const recordCorrections = mysqlTable(
 		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
 	},
 	(t) => [index('record_corrections_donor_idx').on(t.facilityId, t.userId, t.createdAt)],
+)
+
+/** A blood drive a facility runs with a host (school, church, company). `number` is the public DRIVE-0001 code, `short` the link code. The host contact is private. */
+export const drives = mysqlTable(
+	'drives',
+	{
+		id: varchar('id', { length: 26 }).primaryKey(),
+		number: int('number').notNull(),
+		short: varchar('short', { length: 8 }).notNull(),
+		facilityId: varchar('facility_id', { length: 26 }).notNull(),
+		host: varchar('host', { length: 120 }).notNull(),
+		venue: varchar('venue', { length: 160 }).notNull(),
+		town: varchar('town', { length: 80 }).notNull(),
+		date: date('date', { mode: 'string' }).notNull(),
+		starts: varchar('starts', { length: 5 }).notNull(),
+		ends: varchar('ends', { length: 5 }).notNull(),
+		publicText: varchar('public_text', { length: 200 }).notNull(),
+		target: int('target'),
+		contactName: varchar('contact_name', { length: 100 }),
+		contactPhone: varchar('contact_phone', { length: 16 }),
+		isPublic: boolean('is_public').notNull().default(false),
+		smsEnabled: boolean('sms_enabled').notNull().default(false),
+		status: mysqlEnum('status', ['draft', 'published', 'closed', 'cancelled', 'taken_down']).notNull(),
+		publishedAt: datetime('published_at', { fsp: 3 }),
+		closedAt: datetime('closed_at', { fsp: 3 }),
+		cancelledAt: datetime('cancelled_at', { fsp: 3 }),
+		interestTotal: int('interest_total'), // kept when the interested list is deleted at close
+		interestCame: int('interest_came'),
+		createdBy: varchar('created_by', { length: 26 }).notNull(),
+		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
+		updatedAt: datetime('updated_at', { fsp: 3 }).notNull(),
+	},
+	(t) => [uniqueIndex('drives_number_uq').on(t.number), uniqueIndex('drives_short_uq').on(t.short), index('drives_facility_idx').on(t.facilityId, t.date), index('drives_public_idx').on(t.status, t.date)],
+)
+
+/** Someone who said they are coming. Name and an optional phone only; deleted when the drive closes. */
+export const driveInterest = mysqlTable(
+	'drive_interest',
+	{
+		id: varchar('id', { length: 26 }).primaryKey(),
+		driveId: varchar('drive_id', { length: 26 }).notNull(),
+		name: varchar('name', { length: 100 }).notNull(),
+		phone: varchar('phone', { length: 16 }),
+		userId: varchar('user_id', { length: 26 }),
+		arrivedAt: datetime('arrived_at', { fsp: 3 }),
+		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
+	},
+	(t) => [uniqueIndex('drive_interest_user_uq').on(t.driveId, t.userId), index('drive_interest_drive_idx').on(t.driveId, t.createdAt)],
+)
+
+/** One text to one donor about one drive. Reserved before sending, so nobody is told twice. */
+export const driveAlerts = mysqlTable(
+	'drive_alerts',
+	{
+		id: varchar('id', { length: 26 }).primaryKey(),
+		driveId: varchar('drive_id', { length: 26 }).notNull(),
+		userId: varchar('user_id', { length: 26 }).notNull(),
+		status: mysqlEnum('status', ['reserved', 'sent', 'failed']).notNull(),
+		error: varchar('error', { length: 200 }),
+		sentAt: datetime('sent_at', { fsp: 3 }),
+		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
+	},
+	(t) => [uniqueIndex('drive_alerts_user_uq').on(t.driveId, t.userId)],
 )

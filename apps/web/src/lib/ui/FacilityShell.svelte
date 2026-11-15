@@ -20,7 +20,7 @@
 			{ key: 'calls', label: 'Calls', href: f ? `/facility/${f.id}/calls` : undefined, icon: 'bell' },
 			{ key: 'donor-requests', label: 'Donor requests', href: f ? `/facility/${f.id}/donor-requests` : undefined, icon: 'user' },
 			{ key: 'checkin', label: 'Check-in', href: f ? `/facility/${f.id}/checkin` : undefined, icon: 'check' },
-			{ key: 'drives', label: 'Blood drives', icon: 'calendar' },
+			{ key: 'drives', label: 'Blood drives', href: f ? `/facility/${f.id}/drives` : undefined, icon: 'calendar' },
 			{ key: 'donors', label: 'Donors', href: f ? `/facility/${f.id}/donors` : undefined, icon: 'heart', admin: true },
 			{ key: 'attendants', label: 'Attendants', href: f ? `/facility/${f.id}/attendants` : undefined, icon: 'user', admin: true },
 			{ key: 'profile', label: 'Facility profile', href: f ? `/facility/${f.id}/profile` : undefined, icon: 'building', admin: true },

@@ -38,7 +38,7 @@ export async function json<T = any>(res: Response): Promise<T> {
 /** Empties the tables phase 1 uses. TRUNCATE skips the audit log's delete guard on purpose. */
 export async function resetAccounts({ db }: TestApp) {
 	await db.execute(sql`SET FOREIGN_KEY_CHECKS = 0`)
-	for (const t of ['facility_invites', 'audit_log', 'facility_events', 'facility_members', 'donor_prefs', 'donation_requests', 'auth_tokens', 'phone_otps', 'users', 'user_extra_facilities', 'facility_requests', 'blood_requests', 'request_events', 'calls', 'call_responses', 'call_alerts', 'donations', 'visits', 'lab_samples', 'walkin_visits', 'record_corrections', 'refresh_tokens', 'rate_limits', 'facilities']) await db.execute(sql.raw(`TRUNCATE TABLE \`${t}\``))
+	for (const t of ['facility_invites', 'audit_log', 'facility_events', 'facility_members', 'donor_prefs', 'donation_requests', 'auth_tokens', 'phone_otps', 'users', 'user_extra_facilities', 'facility_requests', 'blood_requests', 'request_events', 'calls', 'call_responses', 'call_alerts', 'donations', 'visits', 'lab_samples', 'walkin_visits', 'drives', 'drive_interest', 'drive_alerts', 'settings', 'record_corrections', 'refresh_tokens', 'rate_limits', 'facilities']) await db.execute(sql.raw(`TRUNCATE TABLE \`${t}\``))
 	await db.execute(sql`SET FOREIGN_KEY_CHECKS = 1`)
 }
 

@@ -15,6 +15,7 @@ import { checkinRoutes } from './routes/checkin'
 import { donorRequestRoutes } from './routes/donor-requests'
 import { recordRoutes } from './routes/records'
 import { facilityHomeRoutes } from './routes/facility-home'
+import { driveRoutes } from './routes/drives'
 import { facilityCallRoutes } from './routes/facility-calls'
 import { publicCallRoutes } from './routes/public-calls'
 import { facilityRequestRoutes } from './routes/facility-requests'
@@ -62,6 +63,7 @@ export function createApp(deps: AppDeps) {
 	app.route('/api/requests', requestRoutes)
 	app.route('/api/my-facilities/:id/requests', facilityRequestRoutes)
 	app.route('/api/my-facilities/:id/calls', facilityCallRoutes)
+	app.route('/api/my-facilities/:id/drives', driveRoutes)
 	app.route('/api/public/calls', publicCallRoutes)
 	app.route('/api/sms', smsRoutes)
 	app.route('/api/cron', cronRoutes)
