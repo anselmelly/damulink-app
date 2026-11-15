@@ -49,13 +49,13 @@
 		<h1 class="text-[34px] font-extrabold leading-10 tracking-tight md:text-[44px] md:leading-[50px]">Share this call</h1>
 		<p class="max-w-2xl text-base leading-6 text-muted">{BRAND.name} made a poster for you. Post it to a status, a group, or print it. It shows only a blood type, a medical facility, and a short message.</p>
 	</header>
-	<div class="grid items-start gap-6 lg:grid-cols-[1.65fr_1fr_1fr]">
+	<div class="grid items-start gap-6 lg:grid-cols-[auto_auto_1fr]">
 		{#each [['square', 'Square', 'Feed posts, groups, print'], ['story', 'Story', 'Status, 9:16']] as [k, l, d]}
 			{@const sh = SHAPES[k as Shape]}
 			<div class="flex flex-col gap-3">
-				<svg id="poster-{k}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {sh.w} {sh.h}" class="w-full rounded-3xl" role="img" aria-label="Poster: {c.bloodType} blood needed at {c.facility.name}">
+				<svg id="poster-{k}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {sh.w} {sh.h}" class="w-full rounded-3xl lg:h-[540px] lg:w-auto" role="img" aria-label="Poster: {c.bloodType} blood needed at {c.facility.name}">
 					<rect width={sh.w} height={sh.h} fill="#e11d48" />
-					<path d="M{sh.w - 320} {sh.box - 260}c-110 140-190 240-190 330a190 190 0 0 0 380 0c0-90-80-190-190-330z" fill="#fff" opacity=".12" />
+					<path transform="translate({sh.w - 80} {sh.ty - 330}) scale(1.7)" d="M0 0c-110 140-190 240-190 330a190 190 0 0 0 380 0c0-90-80-190-190-330z" fill="#fff" opacity=".14" />
 					<g font-family="system-ui, sans-serif" fill="#fff">
 						<text x="70" y="130" font-size="68" font-weight="800">{BRAND.name}</text>
 						{#if c.urgency !== 'normal'}<rect x="780" y="76" width="230" height="70" rx="35" fill="#fff" /><text x="895" y="124" font-size="34" font-weight="800" letter-spacing="3" text-anchor="middle" fill="#b91c1c">{urgencyLabel(c.urgency).toUpperCase()}</text>{/if}
