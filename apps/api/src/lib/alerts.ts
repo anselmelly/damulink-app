@@ -1,4 +1,4 @@
-import { alertedUserIds, alertRows, candidateDonors, donorPlaces, getFacility, listResponses, markAlert, moveCall, reserveAlert, sentSince, type Call, type Db } from '@damu/db'
+import { alertedUserIds, alertRows, candidateDonors, donorPlaces, getFacility, heldUserIds, listResponses, markAlert, moveCall, reserveAlert, sentSince, type Call, type Db } from '@damu/db'
 import { ALERT_LIMIT_DEFAULTS, BRAND, RING_COUNT, RING_DEFAULTS, alertText, checkEligibility, inQuietHours, ringOf } from '@damu/shared-types'
 import type { AppConfig } from '../app'
 import { getEligibilitySettings } from './eligibility'
@@ -24,9 +24,10 @@ export async function matchDonors(db: Db, o: { facilityId: string; types: string
 	const applyLimits = o.limits && o.urgency === 'normal'
 	const sent = applyLimits ? await sentSince(db, rows.map((r) => r.u.id), new Date(o.now.getTime() - 7 * 86_400_000)) : new Map<string, number>()
 	const today = o.now.toISOString().slice(0, 10)
+	const held = await heldUserIds(db, rows.map((r) => r.u.id), today)
 	const out: { user: (typeof rows)[number]['u']; ring: 1 | 2 | 3 }[] = []
 	for (const { u, p } of rows) {
-		if (done.has(u.id)) continue
+		if (done.has(u.id) || held.has(u.id)) continue
 		if (!(p ? p.smsAlerts : u.smsOptIn)) continue
 		if (p && (!p.available || (p.pausedUntil && p.pausedUntil > o.now))) continue
 		if (checkEligibility({ sex: u.sex!, dateOfBirth: u.dateOfBirth!, today, lastDonationOn: u.lastDonationOn, weightKg: u.weightKg, settings: elig }).status !== 'eligible') continue

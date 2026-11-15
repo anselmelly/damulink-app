@@ -357,3 +357,77 @@ export const callAlerts = mysqlTable(
 	},
 	(t) => [uniqueIndex('call_alerts_donor_uq').on(t.callId, t.userId), index('call_alerts_user_idx').on(t.userId, t.sentAt)],
 )
+
+// ---------- phase 5a: check-in, donations, lab results, walk-ins ----------
+/** A donation a facility recorded. The donor's last-donation date and count come from here. */
+export const donations = mysqlTable(
+	'donations',
+	{
+		id: varchar('id', { length: 26 }).primaryKey(),
+		userId: varchar('user_id', { length: 26 }).notNull(),
+		facilityId: varchar('facility_id', { length: 26 }).notNull(),
+		donatedOn: date('donated_on', { mode: 'string' }).notNull(),
+		weightKg: decimal('weight_kg', { precision: 4, scale: 1, mode: 'number' }),
+		bagNumber: varchar('bag_number', { length: 40 }),
+		callId: varchar('call_id', { length: 26 }),
+		recordedBy: varchar('recorded_by', { length: 26 }).notNull(),
+		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
+	},
+	(t) => [index('donations_user_idx').on(t.userId, t.donatedOn), index('donations_facility_idx').on(t.facilityId, t.donatedOn)],
+)
+
+/** Every outcome recorded at a desk. Only the fact: no health reason is ever stored. */
+export const visits = mysqlTable(
+	'visits',
+	{
+		id: varchar('id', { length: 26 }).primaryKey(),
+		userId: varchar('user_id', { length: 26 }).notNull(),
+		facilityId: varchar('facility_id', { length: 26 }).notNull(),
+		kind: mysqlEnum('kind', ['donated', 'test', 'deferred', 'no_show']).notNull(),
+		donationId: varchar('donation_id', { length: 26 }),
+		callId: varchar('call_id', { length: 26 }),
+		appointmentId: varchar('appointment_id', { length: 26 }),
+		returnAfter: date('return_after', { mode: 'string' }), // a deferral's "pause alerts until" date
+		recordedBy: varchar('recorded_by', { length: 26 }).notNull(),
+		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
+	},
+	(t) => [index('visits_facility_idx').on(t.facilityId, t.createdAt), index('visits_user_idx').on(t.userId, t.createdAt)],
+)
+
+/** A sample waiting for the lab's blood type. Entering the type verifies the donor. */
+export const labSamples = mysqlTable(
+	'lab_samples',
+	{
+		id: varchar('id', { length: 26 }).primaryKey(),
+		userId: varchar('user_id', { length: 26 }).notNull(),
+		facilityId: varchar('facility_id', { length: 26 }).notNull(),
+		source: mysqlEnum('source', ['donation', 'test']).notNull(),
+		donationId: varchar('donation_id', { length: 26 }),
+		sampleRef: varchar('sample_ref', { length: 40 }).notNull(),
+		status: mysqlEnum('status', ['pending', 'resulted']).notNull().default('pending'),
+		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
+		resultedAt: datetime('resulted_at', { fsp: 3 }),
+		resultedBy: varchar('resulted_by', { length: 26 }),
+	},
+	(t) => [index('lab_samples_facility_idx').on(t.facilityId, t.status, t.createdAt), index('lab_samples_user_idx').on(t.userId)],
+)
+
+/** Someone who donated without an account. Name, sex, date of birth and the facts of the visit; no contact details are kept (an invite number is deleted once the text is sent). */
+export const walkinVisits = mysqlTable(
+	'walkin_visits',
+	{
+		id: varchar('id', { length: 26 }).primaryKey(),
+		facilityId: varchar('facility_id', { length: 26 }).notNull(),
+		name: varchar('name', { length: 100 }).notNull(),
+		sex: mysqlEnum('sex', ['female', 'male']).notNull(),
+		dateOfBirth: date('date_of_birth', { mode: 'string' }).notNull(),
+		weightKg: decimal('weight_kg', { precision: 4, scale: 1, mode: 'number' }),
+		bloodType: mysqlEnum('blood_type', ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+']),
+		outcome: mysqlEnum('outcome', ['donated', 'test', 'deferred']).notNull(),
+		bagNumber: varchar('bag_number', { length: 40 }),
+		invitePhone: varchar('invite_phone', { length: 16 }),
+		recordedBy: varchar('recorded_by', { length: 26 }).notNull(),
+		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
+	},
+	(t) => [index('walkin_visits_facility_idx').on(t.facilityId, t.createdAt)],
+)

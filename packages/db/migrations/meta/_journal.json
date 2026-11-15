@@ -78,6 +78,13 @@
       "when": 1794711241722,
       "tag": "0010_sms_alerts",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1794715262024,
+      "tag": "0011_checkin",
+      "breakpoints": true
     }
   ]
 }
