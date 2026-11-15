@@ -172,7 +172,9 @@
 		{:else if d.status === 'needs_info'}
 			<section class="card flex flex-col gap-2 p-6 md:p-8"><h2 class="text-lg font-bold">Waiting for the requester</h2><p class="text-[15px] text-muted">You asked: "{d.question}". The request returns to Pending when they reply.</p></section>
 		{:else if d.status === 'approved'}
-			<section class="card flex flex-col gap-3 p-6 md:p-8"><h2 class="flex items-center gap-2 text-xl font-bold"><Icon name="check" class="h-6 w-6 text-green-700" />Approved</h2><p class="text-[15px] text-muted">Publishing a call and alerting donors comes in the next phase. For now the request stays approved.</p><button type="button" disabled class="btn-secondary self-start opacity-60 sm:!w-auto sm:px-6" title="Coming next">Publish or alert donors</button></section>
+			<section class="card flex flex-col gap-3 p-6 md:p-8"><h2 class="flex items-center gap-2 text-xl font-bold"><Icon name="check" class="h-6 w-6 text-green-700" />Approved</h2><p class="text-[15px] text-muted">Publish a public call so donors can find and share it.</p><a href="/facility/{id}/requests/{rid}/publish" class="btn-primary self-start sm:!w-auto sm:px-8">Publish a call</a></section>
+		{:else if d.call}
+			<section class="card flex flex-col gap-3 p-6 md:p-8"><h2 class="text-xl font-bold">{d.call.number}</h2><p class="text-[15px] text-muted">This request has a call. {d.call.covered} of {d.call.units} units donated.</p><a href="/facility/{id}/calls/{d.call.id}" class="btn-primary self-start sm:!w-auto sm:px-8">Manage the call</a></section>
 		{:else if d.status === 'rejected'}
 			<section class="card flex flex-col gap-2 p-6 md:p-8"><h2 class="flex items-center gap-2 text-xl font-bold"><Icon name="x" class="h-6 w-6 text-red-700" />Rejected</h2><p class="text-[15px]">{REJECT_REASON_TEXT[d.rejectReason ?? 'other']}</p>{#if d.rejectMessage}<p class="text-[15px] text-muted">{d.rejectMessage}</p>{/if}<p class="text-[14px] text-muted">The requester can see this reason.</p></section>
 		{/if}

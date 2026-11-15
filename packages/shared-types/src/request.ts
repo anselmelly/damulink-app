@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { BLOOD_TYPES } from './auth'
+import type { CallBrief } from './call'
 
 export const REQUEST_RELATIONS = ['family', 'friend', 'colleague', 'community', 'other'] as const
 export const REQUEST_STATUSES = ['pending', 'needs_info', 'confirmed', 'approved', 'published', 'closed', 'rejected', 'cancelled'] as const
@@ -17,14 +18,16 @@ export const formatRequestNumber = (n: number) => `REQ-${String(n).padStart(4, '
 export const patientKey = (ref: string) => ref.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim()
 
 /** The only legal moves. Everything that changes a request's status goes through this table. */
-export type RequestAction = 'confirm' | 'ask' | 'approve' | 'reject' | 'reply' | 'cancel'
+export type RequestAction = 'confirm' | 'ask' | 'approve' | 'reject' | 'reply' | 'cancel' | 'publish' | 'close'
 export const REQUEST_MOVES: Record<RequestAction, { from: readonly RequestStatus[]; to: RequestStatus }> = {
 	confirm: { from: ['pending'], to: 'confirmed' },
 	ask: { from: ['pending', 'confirmed'], to: 'needs_info' },
 	approve: { from: ['confirmed'], to: 'approved' },
 	reject: { from: ['pending', 'confirmed'], to: 'rejected' },
 	reply: { from: ['needs_info'], to: 'pending' },
-	cancel: { from: ['pending', 'needs_info', 'confirmed', 'approved'], to: 'cancelled' },
+	cancel: { from: ['pending', 'needs_info', 'confirmed', 'approved', 'published'], to: 'cancelled' },
+	publish: { from: ['approved'], to: 'published' },
+	close: { from: ['published'], to: 'closed' },
 }
 
 const when = z.string().refine((s) => !Number.isNaN(Date.parse(s)), 'Enter a date and time')
@@ -86,6 +89,7 @@ export type RequestDetail = {
 	rejectReason: string | null
 	rejectMessage: string | null
 	timeline: RequestEventView[]
+	call: CallBrief | null
 	createdAt: string
 }
 export type FacilityRequestItem = { id: string; number: string; status: RequestStatus; source: 'public' | 'facility'; patientRef: string; bloodType: string; units: number; urgency: string; neededBy: string; requesterName: string | null; createdAt: string }

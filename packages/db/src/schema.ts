@@ -289,11 +289,54 @@ export const requestEvents = mysqlTable(
 	{
 		id: varchar('id', { length: 26 }).primaryKey(),
 		requestId: varchar('request_id', { length: 26 }).notNull(),
-		kind: mysqlEnum('kind', ['sent', 'raised', 'confirmed', 'asked', 'replied', 'approved', 'rejected', 'cancelled']).notNull(),
+		kind: mysqlEnum('kind', ['sent', 'raised', 'confirmed', 'asked', 'replied', 'approved', 'rejected', 'cancelled', 'published', 'closed']).notNull(),
 		actorId: varchar('actor_id', { length: 26 }),
 		note: text('note'),
 		visibleToRequester: boolean('visible_to_requester').notNull().default(true),
 		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
 	},
 	(t) => [index('request_events_request_idx').on(t.requestId, t.createdAt)],
+)
+
+/** A published request: the public appeal. One per request. `number` is the public CALL-0187 code, `short` the link code. */
+export const calls = mysqlTable(
+	'calls',
+	{
+		id: varchar('id', { length: 26 }).primaryKey(),
+		number: int('number').notNull(),
+		short: varchar('short', { length: 8 }).notNull(),
+		requestId: varchar('request_id', { length: 26 }).notNull(),
+		facilityId: varchar('facility_id', { length: 26 }).notNull(),
+		bloodType: varchar('blood_type', { length: 4 }).notNull(), // the patient's type, shown on the page
+		types: json('types').$type<string[]>().notNull(), // donor types invited (compatible, maybe narrowed)
+		urgency: mysqlEnum('urgency', ['normal', 'urgent', 'surge']).notNull(),
+		publicText: varchar('public_text', { length: 500 }).notNull(),
+		isPublic: boolean('is_public').notNull(),
+		smsEnabled: boolean('sms_enabled').notNull().default(false),
+		status: mysqlEnum('status', ['live', 'closed', 'expired', 'taken_down']).notNull(),
+		unitsNeeded: int('units_needed').notNull(),
+		publishedAt: datetime('published_at', { fsp: 3 }).notNull(),
+		closesAt: datetime('closes_at', { fsp: 3 }).notNull(),
+		extendedDays: int('extended_days').notNull().default(0),
+		closedAt: datetime('closed_at', { fsp: 3 }),
+		closeReason: varchar('close_reason', { length: 20 }),
+		createdBy: varchar('created_by', { length: 26 }).notNull(),
+	},
+	(t) => [uniqueIndex('calls_number_uq').on(t.number), uniqueIndex('calls_short_uq').on(t.short), uniqueIndex('calls_request_uq').on(t.requestId), index('calls_facility_idx').on(t.facilityId, t.status), index('calls_live_idx').on(t.status, t.closesAt)],
+)
+
+/** A donor who said YES to a call. The facility sees these rows; the requester and the public never do. */
+export const callResponses = mysqlTable(
+	'call_responses',
+	{
+		id: varchar('id', { length: 26 }).primaryKey(),
+		callId: varchar('call_id', { length: 26 }).notNull(),
+		userId: varchar('user_id', { length: 26 }).notNull(),
+		ring: int('ring').notNull(),
+		status: mysqlEnum('status', ['willing', 'scheduled', 'donated', 'not_needed']).notNull(),
+		repliedAt: datetime('replied_at', { fsp: 3 }).notNull(),
+		scheduledAt: datetime('scheduled_at', { fsp: 3 }),
+		donationId: varchar('donation_id', { length: 26 }),
+	},
+	(t) => [uniqueIndex('call_responses_donor_uq').on(t.callId, t.userId), index('call_responses_call_idx').on(t.callId, t.repliedAt)],
 )

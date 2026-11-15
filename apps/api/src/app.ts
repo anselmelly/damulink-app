@@ -9,6 +9,8 @@ import type { Mailer, Sms } from './lib/services'
 import { requestId } from './middleware/request-id'
 import { authRoutes } from './routes/auth'
 import { adminRoutes } from './routes/admin'
+import { facilityCallRoutes } from './routes/facility-calls'
+import { publicCallRoutes } from './routes/public-calls'
 import { facilityRequestRoutes } from './routes/facility-requests'
 import { facilityRoutes } from './routes/facilities'
 import { facilitySignupRoutes } from './routes/facility-signup'
@@ -51,6 +53,8 @@ export function createApp(deps: AppDeps) {
 	app.route('/api/facilities', facilityRoutes)
 	app.route('/api/requests', requestRoutes)
 	app.route('/api/my-facilities/:id/requests', facilityRequestRoutes)
+	app.route('/api/my-facilities/:id/calls', facilityCallRoutes)
+	app.route('/api/public/calls', publicCallRoutes)
 	app.route('/api/my-facilities', myFacilityRoutes)
 	app.route('/api/admin', adminRoutes)
 

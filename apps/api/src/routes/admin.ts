@@ -15,6 +15,7 @@ import { decisionInput, maskPhone, type AdminFacilityDetail, type AdminFacilityR
 import { createMiddleware } from 'hono/factory'
 import type { AppEnv } from '../app'
 import { ApiError } from '../lib/errors'
+import { takeDownCalls } from '../lib/calls'
 import { eventView } from '../lib/facilities'
 import { newId } from '../lib/id'
 import { facilityDecisionMessage } from '../lib/messages'
@@ -98,6 +99,7 @@ adminRoutes.post('/facilities/:id/decision', async (c: Context<AuthEnv>) => {
 		if (!(move.from as readonly string[]).includes(f.status)) throw new ApiError(409, 'not_allowed', `A facility that is ${f.status.replace('_', ' ')} cannot be ${input.action === 'ask' ? 'asked a question' : input.action + (input.action.endsWith('e') ? 'd' : 'ed')}.`)
 		await updateFacility(db, f.id, { status: move.to, ...(input.action === 'approve' ? { verifiedAt: now } : {}) })
 	}
+	if (input.action === 'suspend') await takeDownCalls(db, f.id, now, user.id)
 	// reasons and questions are for the applicant; approvals, notes and suspensions are for reviewers
 	const visible = input.action === 'reject' || input.action === 'ask'
 	await addFacilityEvent(db, { id: newId(now.getTime()), facilityId: f.id, actorId: user.id, kind: input.action, how: input.how || null, text: input.text || null, visible, createdAt: now })

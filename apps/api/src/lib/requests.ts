@@ -1,5 +1,6 @@
 import { getSetting, listRequestEvents, type BloodRequest, type Db, type RequestEvent } from '@damu/db'
 import { REQUEST_DEFAULTS, formatRequestNumber, type RequestDetail, type RequestEventView, type RequestSummary } from '@damu/shared-types'
+import { callBrief } from './calls'
 import { ApiError } from './errors'
 
 /** Nairobi is UTC+3 all year (no daylight saving): the start of the Nairobi calendar day that contains `now`. */
@@ -58,6 +59,7 @@ export async function detailView(db: Db, r: BloodRequest, requesterOnly: boolean
 		rejectReason: r.rejectReason,
 		rejectMessage: r.rejectMessage,
 		timeline: events.map(eventView),
+		call: await callBrief(db, r.id),
 		createdAt: r.createdAt.toISOString(),
 	}
 }

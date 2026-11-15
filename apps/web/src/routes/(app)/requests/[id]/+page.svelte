@@ -8,6 +8,7 @@
 	import AccountShell from '$lib/ui/AccountShell.svelte'
 	import BloodChip from '$lib/ui/BloodChip.svelte'
 	import Icon from '$lib/ui/Icon.svelte'
+	import { CALL_STATUS, closesOn, shortLink } from '$lib/calls'
 	import type { RequestDetail } from '@damu/shared-types'
 
 	const id = $derived(page.params.id)
@@ -44,7 +45,7 @@
 				} as Record<string, [string, string]>)[d.status]
 			: ['', ''],
 	)
-	const open = $derived(d ? ['pending', 'needs_info', 'confirmed', 'approved'].includes(d.status) : false)
+	const open = $derived(d ? ['pending', 'needs_info', 'confirmed', 'approved', 'published'].includes(d.status) : false)
 
 	async function send(e: SubmitEvent) {
 		e.preventDefault()
@@ -109,6 +110,18 @@
 				{/each}
 			</ol>
 		</section>
+
+		{#if d.call}
+			<section class="card flex flex-col gap-3 p-6 md:p-8" aria-label="Public call">
+				<div class="flex flex-wrap items-center gap-3"><h2 class="text-lg font-bold">Public call {d.call.number}</h2><span class="badge {CALL_STATUS[d.call.status][0]}">{CALL_STATUS[d.call.status][1]}</span></div>
+				<p class="text-[15px]">{d.call.covered} of {d.call.units} {d.call.units === 1 ? 'unit' : 'units'} donated.{#if d.call.status === 'live'} Open until {closesOn(d.call.closesAt)}.{/if}</p>
+				{#if d.call.status === 'live'}
+					<p class="text-[14px] text-muted">Share this link: <code class="rounded bg-rose-50 px-2 py-1">{shortLink(location.origin, d.call.short)}</code></p>
+					<div class="flex flex-wrap gap-4 text-[15px]"><a href="/calls/{d.call.number}" target="_blank" class="link">Open the public page</a><a href="/calls/{d.call.number}/share" target="_blank" class="link">Poster and WhatsApp</a></div>
+				{/if}
+				<p class="flex items-center gap-2 text-[14px] text-muted"><Icon name="lock" class="h-4 w-4" />Donors' details stay with the facility.</p>
+			</section>
+		{/if}
 
 		{#if d.status === 'needs_info' && d.question}
 			<section class="card flex flex-col gap-4 p-6 md:p-8">

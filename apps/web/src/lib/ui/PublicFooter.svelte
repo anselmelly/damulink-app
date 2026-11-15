@@ -10,7 +10,7 @@
 			<p class="text-[15px] leading-6 text-muted">Connecting verified medical facilities, donors, and families. Patient details are never shown publicly.</p>
 		</div>
 		<nav aria-label="Footer" class="grid grid-cols-2 gap-x-14 gap-y-3 text-[15px] font-semibold sm:grid-cols-3">
-			<a href="/#how" class="link">How it works</a><a href="/#facilities" class="link">For medical facilities</a><a href="/login" class="link">Log in</a><a href="/create-account" class="link">Sign up</a>
+			<a href="/calls" class="link">Open calls</a><a href="/#how" class="link">How it works</a><a href="/#facilities" class="link">For medical facilities</a><a href="/login" class="link">Log in</a><a href="/create-account" class="link">Sign up</a>
 		</nav>
 	</div>
 	<div class="border-t border-rose-100 py-5 text-center text-[13px] text-muted">{new Date().getFullYear()} {BRAND.name}. Facility screening on the day has the final say on every donation.</div>

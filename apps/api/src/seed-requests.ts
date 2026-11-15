@@ -1,8 +1,9 @@
 import { and, eq } from 'drizzle-orm'
-import { addMember, addRequestEvent, bloodRequests, countSentSince, createUser, facilities, findUserByEmail, insertRequest, loadDotEnv, makeDb, requestEvents } from '@damu/db'
+import { addMember, addRequestEvent, bloodRequests, callResponses, calls, insertCall, countSentSince, createUser, facilities, findUserByEmail, insertRequest, loadDotEnv, makeDb, requestEvents } from '@damu/db'
 import { formatRequestNumber, newFacilityCode, patientKey } from '@damu/shared-types'
 import { newId } from './lib/id'
 import { hashPassword } from './lib/password'
+import { newShort } from './lib/calls'
 
 // Development data: a requester, a facility team and one request in every status, all invented. Safe to run again.
 // Never for the live server: it refuses to run in production.
@@ -71,6 +72,34 @@ if ((await countSentSince(db, requester.id, new Date(0))) > 0) {
 	await insertRequest(db, { id, facilityId: facility.id, raisedBy: admin.id, source: 'facility', patientRef: 'Ward 8, bed 3', patientRefKey: patientKey('Ward 8, bed 3'), bloodTypeAsked: 'A-', unitsAsked: 2, neededBy: later(20), urgencyAsked: 'normal', status: 'approved', bloodType: 'A-', units: 2, urgency: 'normal', confirmedBy: admin.id, confirmedAt: ago(2), decidedBy: admin.id, decidedAt: ago(2), createdAt: ago(2), updatedAt: ago(2) }, { id: newId(now.getTime()), requestId: id, kind: 'raised', actorId: admin.id, note: null, visibleToRequester: false, createdAt: ago(2) })
 	const [last] = await db.select({ n: bloodRequests.number }).from(bloodRequests).where(eq(bloodRequests.id, id))
 	console.log(`seeded ${rows.length + 1} requests, the last is ${formatRequestNumber(last.n)}`)
+}
+
+// calls: one live (with donors who said yes) and one closed, on the seeded published and closed requests
+const [hasCalls] = await db.select({ id: calls.id }).from(calls).where(eq(calls.facilityId, facility.id)).limit(1)
+if (hasCalls) {
+	console.log('calls already seeded')
+} else {
+	const reqOf = async (ref: string) => (await db.select().from(bloodRequests).where(and(eq(bloodRequests.facilityId, facility.id), eq(bloodRequests.patientRef, ref))).limit(1))[0]
+	const donors = [
+		await person('donor1@seed.example', 'Brian Otieno', '+254712000011'),
+		await person('donor2@seed.example', 'Faith Chebet', '+254712000012'),
+		await person('donor3@seed.example', 'Hassan Ali', '+254712000013'),
+	]
+	const pub = await reqOf('Ward 1, bed 6')
+	const done = await reqOf('Ward 5, bed 2')
+	if (pub && done) {
+		const mk = async (r: typeof pub, o: Partial<typeof calls.$inferInsert>) => {
+			const id = newId(now.getTime())
+			await insertCall(db, { id, requestId: r.id, facilityId: facility.id, bloodType: r.bloodType!, types: ['O+', 'O-'], urgency: r.urgency!, publicText: `We are appealing for ${r.bloodType} blood. Please share this call.`, isPublic: true, smsEnabled: false, status: 'live', unitsNeeded: r.units!, publishedAt: ago(20), closesAt: later(52), createdBy: admin.id, ...o }, newShort)
+			await addRequestEvent(db, { id: newId(now.getTime()), requestId: r.id, kind: 'published', actorId: admin.id, note: null, visibleToRequester: true, createdAt: o.publishedAt ?? ago(20) })
+			return id
+		}
+		const live = await mk(pub, {})
+		const statuses = ['willing', 'scheduled', 'donated'] as const
+		for (const [i, d] of donors.entries()) await db.insert(callResponses).values({ id: newId(now.getTime()), callId: live, userId: d.id, ring: i === 2 ? 2 : 1, status: statuses[i], repliedAt: ago(3 - i), scheduledAt: i === 1 ? later(20) : null })
+		await mk(done, { status: 'closed', closedAt: ago(100), closeReason: 'covered', publishedAt: ago(118), closesAt: ago(46) })
+		console.log('seeded 2 calls (one live with 3 donors, one closed)')
+	}
 }
 console.log(`\nrequester:          requester@seed.example            (${requester.name})\nfacility admin:     facility-admin@seed.example       (${admin.name}, can approve)\nfacility attendant: facility-attendant@seed.example   (${attendant.name}, cannot approve)\npassword for all:   ${PASSWORD}\nfacility:           ${facility.name}, facility code ${facility.facilityCode ?? '(none: set one if you want to use the code login)'}`)
 await pool.end()

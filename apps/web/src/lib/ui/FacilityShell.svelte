@@ -17,7 +17,7 @@
 			{ key: 'home', label: 'Home', icon: 'home' },
 			{ key: 'status', label: 'Facility status', href: f ? `/facility/${f.id}` : undefined, icon: 'shield' },
 			{ key: 'requests', label: 'Requests', href: f ? `/facility/${f.id}/requests` : undefined, icon: 'clipboard' },
-			{ key: 'calls', label: 'Calls', icon: 'bell' },
+			{ key: 'calls', label: 'Calls', href: f ? `/facility/${f.id}/calls` : undefined, icon: 'bell' },
 			{ key: 'checkin', label: 'Check-in', icon: 'check' },
 			{ key: 'drives', label: 'Blood drives', icon: 'calendar' },
 			{ key: 'donors', label: 'Donors', icon: 'heart', admin: true },

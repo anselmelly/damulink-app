@@ -3,8 +3,9 @@
 	import Logo from './Logo.svelte'
 	import { BRAND } from '$lib/brand'
 
-	// Calls and drives are added to this list when those screens exist.
+	// Drives are added to this list when those screens exist.
 	const items = [
+		{ label: 'Open calls', href: '/calls' },
 		{ label: 'How it works', href: '/#how' },
 		{ label: 'For medical facilities', href: '/#facilities' },
 	]

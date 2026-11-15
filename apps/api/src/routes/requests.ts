@@ -1,9 +1,10 @@
 import { Hono, type Context } from 'hono'
-import { addRequestEvent, facilityExists, findOpenForPatient, getFacility, getRequest, countSentSince, insertRequest, listForRequester, moveRequest, writeAudit } from '@damu/db'
+import { getCallForRequest, addRequestEvent, facilityExists, findOpenForPatient, getFacility, getRequest, countSentSince, insertRequest, listForRequester, moveRequest, writeAudit } from '@damu/db'
 import { REQUEST_DEFAULTS, REQUEST_MOVES, formatRequestNumber, cancelInput, patientKey, replyInput, requestInput } from '@damu/shared-types'
 import type { AppEnv } from '../app'
 import { ApiError } from '../lib/errors'
 import { newId } from '../lib/id'
+import { endCall } from '../lib/calls'
 import { checkNeededBy, detailView, nairobiDayStart, numberSetting, summaryView } from '../lib/requests'
 import { parseInput, readJson } from '../lib/validate'
 import { requireAuth, type AuthEnv } from '../middleware/auth'
@@ -96,6 +97,8 @@ requestRoutes.post('/:id/cancel', requireAuth, async (c: Context<AuthEnv>) => {
 	const now = clock.now()
 	if (!(await moveRequest(db, r.id, REQUEST_MOVES.cancel.from, { status: REQUEST_MOVES.cancel.to, updatedAt: now }))) throw new ApiError(409, 'invalid_move', 'This request can no longer be cancelled.')
 	await addRequestEvent(db, { id: newId(now.getTime()), requestId: r.id, kind: 'cancelled', actorId: user.id, note: reason || null, visibleToRequester: true, createdAt: now })
+	const live = await getCallForRequest(db, r.id)
+	if (live) await endCall(db, live, { status: 'closed', reason: 'cancelled', now, actorId: user.id, closeRequest: false })
 	await writeAudit(db, { actorId: user.id, action: 'request.cancel', target: r.id }, now)
 	return c.json(await view(c, r.id))
 })
