@@ -22,6 +22,18 @@ pnpm --filter @damu/web dev     # web on http://localhost:5173 (sends /api to th
 
 Create a local database and a user that may also create `damulink_test_*` databases (see `.env.example` for the names the app reads).
 
+## Try the demo
+
+The demo server at https://dl.anselmelly.com has invented data only (emails end in `@demo.example`). Nothing real is stored there. The password is not in this repository; it is given with the submission.
+
+| Role | Email | What to look at |
+|---|---|---|
+| Donor | `donor1@demo.example` | Dashboard, calls for you, alerts, appointments |
+| Facility admin | `admin.rift-county-hospital@demo.example` | Requests, calls, blood drives, check-in, team |
+| Facility attendant | `attendant.rift-county-hospital@demo.example` | The attendant's view of the same facility |
+
+To sign in to a facility, add its facility code on the log-in page ("Signing in to a facility?"). The codes are printed when the demo seeder runs and are in `demo-accounts.txt` on the server.
+
 ## Status
 
 Built: accounts and sign-in, the donor account (donate or get tested, appointments, alerts, reminders, profile, calls for you), facilities (registration, review, team, invites, check-in, lab results, walk-ins, records), blood requests and calls with SMS alerts in rings, blood drives (share card, interest list, day tracker, summary and CSV), and the super admin area (verification queue, facilities, settings, super admins, audit log, misuse flags, dashboard).
