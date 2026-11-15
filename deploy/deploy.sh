@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Deploys a release to the server and switches to it, or rolls back by itself if the new version does not come up healthy.
 #
-#   deploy/deploy.sh deploy@dl.anselmelly.com                    check, build, upload, switch
-#   deploy/deploy.sh deploy@dl.anselmelly.com path/to/release.tar.gz   upload an already built release
+#   deploy/deploy.sh deploy@<server-ip>                    check, build, upload, switch
+#   deploy/deploy.sh deploy@<server-ip> path/to/release.tar.gz   upload an already built release
 #
 # The box is small (1 GB), so nothing is built there. Layout on the server (/srv/damulink):
 #   releases/<stamp>/   one folder per release, the last 5 are kept

@@ -37,10 +37,12 @@ the Caddyfile in `/etc/caddy`; and a DNS A record for `dl.anselmelly.com` (DNS o
 
 ## Everyday use
 
+Use the server's **IP address** for SSH, not the domain: if the domain goes through Cloudflare's proxy, port 22 is not reachable on it ("Network is unreachable" or a timeout).
+
 ```bash
-deploy/deploy.sh deploy@dl.anselmelly.com          # checks, builds, uploads, switches (stops if a check is red)
+deploy/deploy.sh deploy@<server-ip>          # checks, builds, uploads, switches (stops if a check is red)
 deploy/build-release.sh                            # just build a release locally
-deploy/deploy.sh deploy@dl.anselmelly.com dist-release/damulink-<stamp>.tar.gz   # upload one you already built
+deploy/deploy.sh deploy@<server-ip> dist-release/damulink-<stamp>.tar.gz   # upload one you already built
 ```
 
 On the server:
