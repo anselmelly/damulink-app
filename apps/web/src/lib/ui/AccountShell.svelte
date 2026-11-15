@@ -15,7 +15,7 @@
 	// `minorOk`: still shown to an account that cannot donate yet. `tab`: label on the phone's bottom bar ('' = not a tab).
 	const all = [
 		{ key: 'home', label: 'Dashboard', href: '/dashboard', icon: 'home', tab: 'Home', minorOk: true },
-		{ key: 'calls', label: 'Calls for you', icon: 'heart', tab: 'Calls' },
+		{ key: 'calls', label: 'Calls for you', href: '/calls-for-you', icon: 'heart', tab: 'Calls' },
 		{ key: 'donate', label: 'Donate or get tested', href: '/donate', icon: 'drop', tab: 'Donate' },
 		{ key: 'visits', label: 'Appointments', href: '/appointments', icon: 'calendar', tab: 'Visits' },
 		{ key: 'alerts', label: 'Alerts', href: '/alerts', icon: 'bell', tab: '' },

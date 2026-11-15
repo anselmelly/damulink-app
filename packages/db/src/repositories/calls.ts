@@ -135,3 +135,20 @@ export async function getPublicCall(db: Db, key: { number?: number | null; short
 		.limit(1)
 	return r
 }
+
+/** Live calls of verified facilities that accept `bloodType`, with the facility's pin so the caller can place the donor. */
+export async function liveCallsAccepting(db: Db, bloodType: string) {
+	return db
+		.select({ c: calls, facilityName: facilities.name, town: facilities.town, county: facilities.county, lat: facilities.lat, lng: facilities.lng })
+		.from(calls)
+		.innerJoin(facilities, eq(facilities.id, calls.facilityId))
+		.where(and(eq(calls.status, 'live'), eq(facilities.status, 'verified'), sql`json_contains(${calls.types}, json_quote(${bloodType}))`))
+		.orderBy(URGENCY_RANK, desc(calls.publishedAt))
+		.limit(100)
+}
+/** The calls among `callIds` this donor has answered. */
+export async function answeredCalls(db: Db, userId: string, callIds: string[]): Promise<Set<string>> {
+	if (!callIds.length) return new Set()
+	const rows = await db.select({ id: callResponses.callId }).from(callResponses).where(and(eq(callResponses.userId, userId), inArray(callResponses.callId, callIds)))
+	return new Set(rows.map((r) => r.id))
+}

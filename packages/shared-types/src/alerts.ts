@@ -27,3 +27,7 @@ export const inQuietHours = (hour: number, from: number, to: number) => (from ==
 /** The one alert text: the preview and the real message are built here. `link` has no scheme. */
 export const alertText = (brand: string, bloodType: string, facility: string, town: string, link: string) =>
 	`${brand}: ${bloodType} blood needed at ${facility}, ${town}. Reply YES if you can come, or open ${link}. Reply STOP to stop alerts.`
+
+// ---------- a donor's own list of calls
+export type DonorCall = { code: string; short: string; bloodType: string; facility: string; town: string; urgency: string; postedAt: string; stillNeeded: number; where: string; accepted: boolean }
+export type DonorCalls = { state: 'ok' | 'unverified' | 'waiting'; nextEligibleOn?: string; items: DonorCall[] }

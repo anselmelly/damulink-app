@@ -9,6 +9,7 @@ import type { Mailer, Sms } from './lib/services'
 import { requestId } from './middleware/request-id'
 import { authRoutes } from './routes/auth'
 import { adminRoutes } from './routes/admin'
+import { donorCallRoutes } from './routes/donor-calls'
 import { cronRoutes } from './routes/cron'
 import { smsRoutes } from './routes/sms'
 import { checkinRoutes } from './routes/checkin'
@@ -75,6 +76,7 @@ export function createApp(deps: AppDeps) {
 	app.route('/api/my-facilities/:id', checkinRoutes)
 	app.route('/api/my-facilities', myFacilityRoutes)
 	app.route('/api/admin', adminRoutes)
+	app.route('/api/donor/calls', donorCallRoutes as unknown as Hono<AppEnv>)
 
 	app.onError(errorHandler)
 	app.notFound(notFound)
