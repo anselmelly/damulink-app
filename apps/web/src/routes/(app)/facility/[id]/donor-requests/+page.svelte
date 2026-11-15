@@ -79,12 +79,14 @@
 <svelte:head><title>Donor requests | {BRAND.name}</title></svelte:head>
 
 <FacilityShell {f} active="donor-requests">
-	<h1 class="text-[26px] font-extrabold leading-8 tracking-tight md:text-[32px] md:leading-9">Donor requests</h1>
-	<p class="text-muted">Donors asking to come here to donate or get their blood type tested. Set a date and they are texted.</p>
-	<div class="flex flex-wrap gap-2" role="tablist">
-		{#each TABS as [k, l]}<button type="button" role="tab" aria-selected={tab === k} onclick={() => pick(k)} class="h-11 rounded-xl border-[1.5px] px-5 font-semibold {tab === k ? 'border-rose-600 bg-rose-50 text-red-700' : 'border-field bg-white'}">{l}{#if data}<span class="ml-2 text-[13px] opacity-80">{data.counts[k]}</span>{/if}</button>{/each}
+	<header class="flex flex-col gap-1.5">
+		<h1 class="text-[30px] font-extrabold leading-9 tracking-tight md:text-[38px] md:leading-[44px]">Donor requests</h1>
+		<p class="text-base leading-6 text-muted">People asking to donate or get their blood type tested at {f?.name ?? 'this facility'}.</p>
+	</header>
+	<div class="flex gap-2 border-b border-rose-200" role="tablist">
+		{#each TABS as [k, l]}<button type="button" role="tab" aria-selected={tab === k} onclick={() => pick(k)} class="-mb-px flex h-11 items-center gap-2 border-b-2 px-3 text-[15px] font-semibold {tab === k ? 'border-rose-600 text-red-700' : 'border-transparent text-muted hover:text-ink'}">{l}{#if data}<span class="rounded-full bg-rose-100 px-2 text-[12px] leading-5 text-red-700">{data.counts[k]}</span>{/if}</button>{/each}
 	</div>
-	{#if notice}<p class="card flex items-center gap-2 p-4 font-semibold text-emerald-800" role="status"><Icon name="check" class="h-5 w-5" />{notice}</p>{/if}
+	{#if notice}<p class="notice" role="status"><Icon name="check" class="mt-px h-[22px] w-[22px] text-emerald-700" />{notice}</p>{/if}
 
 	{#if !loaded}
 		<p class="text-muted" role="status">Loading…</p>
@@ -93,25 +95,27 @@
 	{:else}
 		<ul class="flex flex-col gap-3">
 			{#each data.items as r (r.id)}
-				<li class="card flex flex-col gap-3 p-5">
-					<div class="flex flex-wrap items-center gap-2">
-						<span class="font-bold">{r.name}</span>
-						<span class="badge badge-soft">{r.kind === 'donate' ? 'Donation' : 'Blood type test'}</span>
-						<span class="badge {r.verified ? 'badge-ok' : 'badge-neutral'}">{r.verified ? 'Verified' : 'Not verified'}</span>
-						{#if r.rescheduleAsked}<span class="badge badge-warn">Asked to move</span>{/if}
-						{#if r.status === 'cancelled'}<span class="badge badge-neutral">{r.cancelledBy === 'facility' ? 'Declined' : 'Cancelled by donor'}</span>{:else if r.status === 'completed'}<span class="badge badge-ok">Done</span>{:else if r.status === 'no_show'}<span class="badge badge-neutral">Did not attend</span>{/if}
+				<li class="card flex flex-col gap-3 p-5 sm:flex-row sm:items-center">
+					<div class="flex min-w-0 flex-1 flex-col gap-1.5">
+						<div class="flex flex-wrap items-center gap-2">
+							<span class="text-lg font-bold">{r.name}</span>
+							<span class="badge {r.kind === 'donate' ? 'badge-soft' : 'badge-neutral'}">{r.kind === 'donate' ? 'Donation' : 'Blood type test'}</span>
+							<span class="badge {r.verified ? 'badge-ok' : 'badge-warn'}">{r.verified ? 'Verified' : 'Registered'}</span>
+							{#if r.rescheduleAsked}<span class="badge badge-warn">Asked to move</span>{/if}
+							{#if r.status === 'cancelled'}<span class="badge badge-neutral">{r.cancelledBy === 'facility' ? 'Declined' : 'Cancelled by donor'}</span>{:else if r.status === 'completed'}<span class="badge badge-ok">Done</span>{:else if r.status === 'no_show'}<span class="badge badge-neutral">Did not attend</span>{/if}
+						</div>
+						<p class="text-[15px] text-muted">{#if r.status === 'requested'}{r.days.map((d) => DAY[d]).join(', ')} · {WHEN[r.timeOfDay]} · {/if}{#if r.scheduledAt}{nairobiDateTime(r.scheduledAt)} · {/if}asked {ago(r.askedAt)} · {r.code}</p>
+						{#if r.note}<p class="text-[14px]">{r.note}</p>{/if}
 					</div>
-					<p class="text-[14px] text-muted">{r.code} · asked {ago(r.askedAt)}{#if r.status === 'requested'} · prefers {r.days.map((d) => DAY[d]).join(', ')}, {WHEN[r.timeOfDay]}{/if}{#if r.scheduledAt} · {nairobiDateTime(r.scheduledAt)}{/if}</p>
-					{#if r.note}<p class="text-[14px]">{r.note}</p>{/if}
-					<div class="flex flex-wrap gap-2">
+					<div class="flex items-center gap-1">
 						{#if r.status === 'requested' || (r.status === 'scheduled' && tab === 'follow_up')}
-							<button type="button" class="btn-primary w-auto px-6" onclick={() => open('date', r)}>{r.status === 'scheduled' ? 'Set a new time' : 'Set a date'}</button>
+							<button type="button" class="link flex h-11 items-center gap-2 px-3 text-[15px]" onclick={() => open('date', r)}><Icon name="calendar" />{r.status === 'scheduled' ? 'Set a new time' : 'Set date'}</button>
 						{/if}
-						{#if r.status === 'requested'}<button type="button" class="btn-danger" onclick={() => open('decline', r)}>Decline</button>{/if}
+						{#if r.status === 'requested'}<button type="button" class="link flex h-11 w-11 items-center justify-center" aria-label="Decline {r.name}" onclick={() => open('decline', r)}><Icon name="x" /></button>{/if}
 						{#if r.status === 'scheduled'}
-							{#if tab === 'scheduled'}<button type="button" class="btn-secondary w-auto px-6" onclick={() => open('date', r)}>Reschedule</button>{/if}
-							<a class="btn-secondary w-auto px-6" href="/facility/{id}/checkin?code={encodeURIComponent(r.code)}">Check in</a>
-							<button type="button" class="btn-danger" onclick={() => open('cancel', r)}>Cancel visit</button>
+							{#if tab === 'scheduled'}<button type="button" class="link flex h-11 w-11 items-center justify-center" aria-label="Reschedule {r.name}" onclick={() => open('date', r)}><Icon name="refresh" /></button>{/if}
+							<a class="link flex h-11 w-11 items-center justify-center" aria-label="Check in {r.name}" href="/facility/{id}/checkin?code={encodeURIComponent(r.code)}"><Icon name="check" /></a>
+							<button type="button" class="link flex h-11 w-11 items-center justify-center" aria-label="Cancel {r.name}'s visit" onclick={() => open('cancel', r)}><Icon name="x" /></button>
 						{/if}
 					</div>
 				</li>

@@ -7,7 +7,7 @@
 	import Logo from './Logo.svelte'
 	import type { MyFacilityView } from '@damu/shared-types'
 
-	let { f, active = 'status', children }: { f: Pick<MyFacilityView, 'id' | 'name' | 'status' | 'role'> | null; active?: string; children: Snippet } = $props()
+	let { f, active = 'status', width = 'wide', children }: { width?: 'narrow' | 'mid' | 'wide'; f: Pick<MyFacilityView, 'id' | 'name' | 'status' | 'role'> & { town?: string } | null; active?: string; children: Snippet } = $props()
 	const user = $derived(auth.user!)
 	const isAdmin = $derived(f?.role === 'admin')
 
@@ -20,7 +20,6 @@
 			{ key: 'calls', label: 'Calls', href: f ? `/facility/${f.id}/calls` : undefined, icon: 'bell' },
 			{ key: 'donor-requests', label: 'Donor requests', href: f ? `/facility/${f.id}/donor-requests` : undefined, icon: 'user' },
 			{ key: 'checkin', label: 'Check-in', href: f ? `/facility/${f.id}/checkin` : undefined, icon: 'check' },
-			{ key: 'lab-results', label: 'Lab results', href: f ? `/facility/${f.id}/lab-results` : undefined, icon: 'drop' },
 			{ key: 'drives', label: 'Blood drives', icon: 'calendar' },
 			{ key: 'donors', label: 'Donors', href: f ? `/facility/${f.id}/donors` : undefined, icon: 'heart', admin: true },
 			{ key: 'attendants', label: 'Attendants', href: f ? `/facility/${f.id}/attendants` : undefined, icon: 'user', admin: true },
@@ -39,7 +38,7 @@
 	<a href="/" class="inline-flex px-6 pb-4 pt-6 text-rose-600"><Logo class="h-9" /></a>
 	<div class="mx-4 mb-4 flex items-center gap-3 rounded-xl bg-rose-50 p-3">
 		<span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-600 text-white"><Icon name="building" class="h-5 w-5" /></span>
-		<span class="min-w-0 leading-5"><span class="block truncate text-[15px] font-bold">{f?.name ?? 'Facility'}</span>{#if f}<span class="badge {STATUS[f.status][0]} mt-0.5 !px-2 !py-0 text-[11px]">{STATUS[f.status][1]}</span>{/if}</span>
+		<span class="min-w-0 leading-5"><span class="block truncate text-[15px] font-bold">{f?.name ?? 'Facility'}</span>{#if f}{#if f.status === 'verified'}<span class="block truncate text-[13px] text-muted">Facility {f.role}{f.town ? ` · ${f.town}` : ''}</span>{:else}<span class="badge {STATUS[f.status][0]} mt-0.5 !px-2 !py-0 text-[11px]">{STATUS[f.status][1]}</span>{/if}{/if}</span>
 	</div>
 	<nav aria-label="Facility" class="flex flex-1 flex-col gap-1 overflow-y-auto px-4">
 		{#each items as i}
@@ -68,7 +67,7 @@
 </nav>
 
 <main class="min-h-screen bg-rose-50 pb-24 md:pb-0 md:pl-64">
-	<div class="mx-auto flex w-full max-w-5xl flex-col gap-6 px-5 py-8 md:px-8 md:py-12">
+	<div class="mx-auto flex w-full {width === 'narrow' ? 'max-w-3xl' : width === 'mid' ? 'max-w-4xl' : 'max-w-5xl'} flex-col gap-6 px-5 py-8 md:px-8 md:py-12">
 		{@render children()}
 	</div>
 </main>
