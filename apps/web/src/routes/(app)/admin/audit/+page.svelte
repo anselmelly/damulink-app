@@ -43,7 +43,7 @@
 <AdminShell active="audit">
 	<header class="flex flex-col gap-1.5"><h1 class="text-[30px] font-extrabold leading-9 tracking-tight md:text-[38px] md:leading-[44px]">Audit log</h1><p class="text-base leading-6 text-muted">Approvals, publications, confirmations and edits. Entries cannot be changed or deleted.</p></header>
 	<form class="flex flex-col gap-3 sm:flex-row" onsubmit={(e) => e.preventDefault()}>
-		<div class="relative flex-1"><Icon name="search" class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" /><input type="search" aria-label="Search the log" placeholder="Search by person, facility or request" bind:value={q} oninput={refine} class="field-input !pl-12" /></div>
+		<div class="relative flex-1"><Icon name="search" class="h-5 w-5 pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" /><input type="search" aria-label="Search the log" placeholder="Search by person, facility or request" bind:value={q} oninput={refine} class="field-input !pl-12" /></div>
 		<select aria-label="Action" bind:value={group} onchange={refine} class="field-input sm:!w-52"><option value="all">All actions</option><option value="approvals">Approvals</option><option value="publications">Publications</option><option value="edits">Edits</option><option value="settings">Settings</option></select>
 	</form>
 	{#if error}<p class="notice-error" role="alert">{error}</p>{/if}
