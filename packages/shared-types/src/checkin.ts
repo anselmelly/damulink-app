@@ -64,3 +64,5 @@ export type OutcomeResult = {
 	call?: { number: string; donated: number; needed: number }
 }
 export type LabSampleItem = { id: string; name: string; code: string; source: 'donation' | 'test'; on: string; sampleRef: string }
+/** A donor who asked for an appointment at this facility. */
+export type RecentRequest = { id: string; kind: 'test' | 'donate'; status: 'requested' | 'scheduled'; at: string; scheduledAt: string | null; name: string; code: string }

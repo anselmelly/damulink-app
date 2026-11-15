@@ -22,6 +22,7 @@ import {
 	moveResponse,
 	recordDonorFacts,
 	pendingSamples,
+	recentRequests,
 	responseCounts,
 	writeAudit,
 	type Call,
@@ -95,6 +96,12 @@ function checksFor(u: User, today: string, s: Awaited<ReturnType<typeof getEligi
 		{ key: 'waiting', ok: e.status !== 'waiting', text: u.lastDonationOn ? `${months} months since ${u.lastDonationOn}` : 'No earlier donation on record' },
 	]
 }
+
+checkinRoutes.get('/checkin-recent', requireAuth, async (c: Context<AuthEnv>) => {
+	const f = await desk(c)
+	const rows = await recentRequests(c.var.db, f.id, 20)
+	return c.json(rows.map((r) => ({ id: r.id, kind: r.kind, status: r.status, at: r.at.toISOString(), scheduledAt: r.scheduledAt?.toISOString() ?? null, name: r.name, code: r.code ?? '' })))
+})
 
 checkinRoutes.get('/checkin/:code', requireAuth, async (c: Context<AuthEnv>) => {
 	const { db, clock, user } = c.var

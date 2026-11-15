@@ -89,3 +89,14 @@ export async function recordDonorFacts(db: Db, userId: string, f: { lastDonation
 	const set = Object.fromEntries(Object.entries(f).filter(([, v]) => v !== undefined && v !== null))
 	if (Object.keys(set).length) await db.update(users).set(set).where(eq(users.id, userId))
 }
+
+/** Donors who asked for an appointment here (still waiting or booked), newest request first. */
+export async function recentRequests(db: Db, facilityId: string, limit: number) {
+	return db
+		.select({ id: donationRequests.id, kind: donationRequests.kind, status: donationRequests.status, at: donationRequests.createdAt, scheduledAt: donationRequests.scheduledAt, name: users.name, code: users.donorCode })
+		.from(donationRequests)
+		.innerJoin(users, eq(users.id, donationRequests.userId))
+		.where(and(eq(donationRequests.facilityId, facilityId), inArray(donationRequests.status, ['requested', 'scheduled'])))
+		.orderBy(desc(donationRequests.createdAt), desc(donationRequests.id))
+		.limit(limit)
+}

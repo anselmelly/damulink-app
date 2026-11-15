@@ -10,7 +10,7 @@
 	import FacilityShell from '$lib/ui/FacilityShell.svelte'
 	import Icon from '$lib/ui/Icon.svelte'
 	import TextField from '$lib/ui/TextField.svelte'
-	import { addMonths, type CheckinCard, type MyFacilityView, type OutcomeResult } from '@damu/shared-types'
+	import { addMonths, type CheckinCard, type MyFacilityView, type OutcomeResult, type RecentRequest } from '@damu/shared-types'
 
 	const id = $derived(page.params.id)
 	let f = $state<MyFacilityView | null>(null)
@@ -28,11 +28,16 @@
 	let testType = $state<'now' | 'later'>('now')
 	let bloodType = $state('')
 	let pauseUntil = $state('')
+	let recent = $state<RecentRequest[]>([])
+	const loadRecent = async () => (recent = await auth.call<RecentRequest[]>(`/my-facilities/${id}/checkin-recent`).catch(() => []))
+	const shown = $derived(recent.filter((r) => !code.trim() || `${r.name} ${r.code}`.toLowerCase().includes(code.trim().toLowerCase())))
+	const clock = (iso: string) => new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Nairobi' })
 
 	onMount(async () => {
 		try {
 			f = await auth.call<MyFacilityView>(`/my-facilities/${id}`)
 		} catch {}
+		await loadRecent()
 	})
 
 	const reset = () => {
@@ -44,9 +49,10 @@
 		errors = {}
 		weight = bag = callId = bloodType = ''
 		testType = 'now'
+		void loadRecent()
 	}
-	async function find(e: SubmitEvent) {
-		e.preventDefault()
+	async function find(e?: SubmitEvent) {
+		e?.preventDefault()
 		if (!code.trim()) return
 		busy = true
 		error = ''
@@ -179,5 +185,22 @@
 			<button class="btn-primary sm:w-auto sm:px-8" disabled={busy || !code.trim()}>{busy ? 'Looking…' : 'Find donor'}</button>
 			<p class="text-[14px] text-muted">No code on hand? <a class="link" href="/facility/{id}/walkin">Add a walk-in</a> instead.</p>
 		</form>
+		<section class="flex flex-col gap-3" aria-labelledby="recent-h">
+			<h2 id="recent-h" class="text-lg font-extrabold">Recent appointment requests</h2>
+			{#if !recent.length}
+				<p class="card p-5 text-muted" role="status">No appointment requests waiting. Donors who ask to come to this facility show up here.</p>
+			{:else if !shown.length}
+				<p class="card p-5 text-muted" role="status">No request matches what you typed.</p>
+			{:else}
+				<ul class="card divide-y divide-rose-100">
+					{#each shown as r (r.id)}
+						<li><button type="button" class="flex w-full items-center gap-3 p-4 text-left hover:bg-rose-50" onclick={() => { code = r.code; void find() }}>
+							<span class="min-w-0 flex-1"><span class="block font-semibold">{r.name}</span><span class="block text-[13px] text-muted">{r.code} · {r.kind === 'donate' ? 'Donation' : 'Blood type test'} · asked {clock(r.at)}{r.scheduledAt ? ` · booked ${clock(r.scheduledAt)}` : ''}</span></span>
+							<span class="badge {r.status === 'scheduled' ? 'badge-ok' : 'badge-soft'}">{r.status === 'scheduled' ? 'Booked' : 'Requested'}</span>
+						</button></li>
+					{/each}
+				</ul>
+			{/if}
+		</section>
 	{/if}
 </FacilityShell>
