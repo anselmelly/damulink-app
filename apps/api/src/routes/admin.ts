@@ -22,6 +22,7 @@ import { newId } from '../lib/id'
 import { facilityDecisionMessage } from '../lib/messages'
 import { parseInput, readJson } from '../lib/validate'
 import { requireAuth, type AuthEnv } from '../middleware/auth'
+import { adminSystemRoutes } from './admin-system'
 
 const requireSuperAdmin = createMiddleware<AuthEnv>(async (c, next) => {
 	if (!c.var.user.isSuperAdmin) throw new ApiError(403, 'forbidden', 'This is for super admins.')
@@ -30,6 +31,7 @@ const requireSuperAdmin = createMiddleware<AuthEnv>(async (c, next) => {
 
 export const adminRoutes = new Hono<AppEnv>()
 adminRoutes.use('/*', requireAuth, requireSuperAdmin)
+adminRoutes.route('/', adminSystemRoutes)
 
 const row = (f: Facility, shared: Set<string>): AdminFacilityRow => ({
 	id: f.id,

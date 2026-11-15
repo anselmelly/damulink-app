@@ -64,6 +64,8 @@ export const users = mysqlTable(
 		status: mysqlEnum('status', ['active', 'suspended']).notNull().default('active'),
 		tokenVersion: int('token_version').notNull().default(0),
 		isSuperAdmin: boolean('is_super_admin').notNull().default(false),
+		adminAddedAt: datetime('admin_added_at', { fsp: 3 }),
+		adminAddedBy: varchar('admin_added_by', { length: 26 }),
 		// empty for people who run or work at a facility without being donors
 		sex: mysqlEnum('sex', ['female', 'male']),
 		dateOfBirth: date('date_of_birth', { mode: 'string' }),
@@ -521,4 +523,24 @@ export const driveAlerts = mysqlTable(
 		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
 	},
 	(t) => [uniqueIndex('drive_alerts_user_uq').on(t.driveId, t.userId)],
+)
+
+// ---------- phase 7: misuse flags ----------
+/** A prompt for a super admin to look at someone. Never a penalty by itself. One open flag per person per reason. */
+export const userFlags = mysqlTable(
+	'user_flags',
+	{
+		id: varchar('id', { length: 26 }).primaryKey(),
+		userId: varchar('user_id', { length: 26 }).notNull(),
+		kind: mysqlEnum('kind', ['rejected_requests', 'no_shows']).notNull(),
+		reason: varchar('reason', { length: 200 }).notNull(),
+		evidence: json('evidence').notNull(), // [{ ref, note, at }]: request references and reject reasons, or facility names and dates
+		status: mysqlEnum('status', ['open', 'dismissed', 'actioned']).notNull().default('open'),
+		openKey: varchar('open_key', { length: 60 }), // user_id:kind while open, null after: the unique index keeps one open flag
+		note: varchar('note', { length: 300 }),
+		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
+		resolvedAt: datetime('resolved_at', { fsp: 3 }),
+		resolvedBy: varchar('resolved_by', { length: 26 }),
+	},
+	(t) => [uniqueIndex('user_flags_open_uq').on(t.openKey), index('user_flags_status_idx').on(t.status, t.createdAt)],
 )

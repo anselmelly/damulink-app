@@ -12,14 +12,14 @@
 
 	// Only the screens that exist are links; the rest arrive in later phases.
 	const items = [
-		{ key: 'dashboard', label: 'Dashboard', icon: 'home' },
+		{ key: 'dashboard', label: 'Dashboard', href: '/admin/dashboard', icon: 'home' },
 		{ key: 'queue', label: 'Verification queue', href: '/admin/queue', icon: 'clipboard' },
 		{ key: 'facilities', label: 'Facilities', href: '/admin/facilities', icon: 'building' },
 		{ key: 'demand', label: 'Facility requests', icon: 'pin' },
-		{ key: 'misuse', label: 'Misuse', icon: 'alert' },
-		{ key: 'audit', label: 'Audit log', icon: 'history' },
-		{ key: 'settings', label: 'System settings', icon: 'sliders' },
-		{ key: 'admins', label: 'Super admins', icon: 'users' },
+		{ key: 'misuse', label: 'Misuse', href: '/admin/misuse', icon: 'alert' },
+		{ key: 'audit', label: 'Audit log', href: '/admin/audit', icon: 'history' },
+		{ key: 'settings', label: 'System settings', href: '/admin/settings', icon: 'sliders' },
+		{ key: 'admins', label: 'Super admins', href: '/admin/admins', icon: 'users' },
 	] as { key: string; label: string; href?: string; icon: string }[]
 
 	async function logout() {
@@ -52,7 +52,7 @@
 
 <div class="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-rose-100 bg-white px-4 md:hidden">
 	<a href="/admin/queue" class="text-rose-600"><Logo class="h-8" /></a>
-	<nav class="flex items-center gap-1 text-sm font-semibold"><a href="/admin/queue" class="rounded-lg px-2 py-2 {active === 'queue' ? 'text-red-700' : 'text-ink'}">Queue</a><a href="/admin/facilities" class="rounded-lg px-2 py-2 {active === 'facilities' ? 'text-red-700' : 'text-ink'}">Facilities</a><a href="/dashboard" class="rounded-lg px-2 py-2 text-ink">Donor</a></nav>
+	<nav class="flex items-center gap-1 text-sm font-semibold"><a href="/admin/queue" class="rounded-lg px-2 py-2 {active === 'queue' ? 'text-red-700' : 'text-ink'}">Queue</a><a href="/admin/facilities" class="rounded-lg px-2 py-2 {active === 'facilities' ? 'text-red-700' : 'text-ink'}">Facilities</a><a href="/admin/misuse" class="rounded-lg px-2 py-2 {active === 'misuse' ? 'text-red-700' : 'text-ink'}">Misuse</a><a href="/admin/settings" class="rounded-lg px-2 py-2 {active === 'settings' ? 'text-red-700' : 'text-ink'}">Settings</a><a href="/dashboard" class="rounded-lg px-2 py-2 text-ink">Donor</a></nav>
 </div>
 
 <main class="min-h-screen bg-rose-50 md:pl-64">
