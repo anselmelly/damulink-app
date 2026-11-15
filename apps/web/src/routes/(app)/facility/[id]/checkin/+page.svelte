@@ -38,6 +38,11 @@
 			f = await auth.call<MyFacilityView>(`/my-facilities/${id}`)
 		} catch {}
 		await loadRecent()
+		const q = page.url.searchParams.get('code')
+		if (q) {
+			code = q
+			void find()
+		}
 	})
 
 	const reset = () => {

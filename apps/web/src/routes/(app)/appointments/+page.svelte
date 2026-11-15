@@ -6,7 +6,7 @@
 	import { nairobiDateTime } from '$lib/dates'
 	import AccountShell from '$lib/ui/AccountShell.svelte'
 	import Icon from '$lib/ui/Icon.svelte'
-	import type { DonationRequestView } from '@damu/shared-types'
+	import { DECLINE_REASONS, type DeclineReason, type DonationRequestView } from '@damu/shared-types'
 
 	let requests = $state<DonationRequestView[]>([])
 	let loaded = $state(false)
@@ -39,6 +39,15 @@
 	const sent = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', timeZone: 'Africa/Nairobi' })
 	const chip = (iso: string) => ({ month: new Date(iso).toLocaleDateString('en-GB', { month: 'short', timeZone: 'Africa/Nairobi' }), day: new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', timeZone: 'Africa/Nairobi' }) })
 
+	async function askMove(id: string) {
+		error = ''
+		try {
+			const u = await auth.call<DonationRequestView>(`/me/donation-requests/${id}/reschedule`, { method: 'POST', body: {} })
+			requests = requests.map((r) => (r.id === id ? u : r))
+		} catch (e) {
+			error = e instanceof ApiError ? e.message : 'Something went wrong.'
+		}
+	}
 	async function cancel(id: string) {
 		error = ''
 		try {
@@ -95,12 +104,12 @@
 						<div class="flex flex-wrap items-center gap-2"><h2 class="text-lg font-bold leading-6">{kindLabel(r)}</h2><span class="badge {cls}">{label}</span></div>
 						<p class="text-[15px] leading-[22px] text-muted">{r.scheduledAt ? `${nairobiDateTime(r.scheduledAt)} · ` : ''}{r.facilityName} · Sent {sent(r.createdAt)}</p>
 						{#if r.status === 'requested'}<p class="text-[13px] text-muted">Waiting for the facility to call you with a date. Preferred: {r.days.map((d) => dayNames[d]).join(', ')} {when[r.timeOfDay]}.</p>{/if}
-						{#if r.status === 'scheduled'}<p class="text-[13px] text-muted">We will remind you the day before and that morning.</p>{/if}
-						{#if r.status === 'cancelled'}<p class="text-[13px] text-muted">You cancelled this request.</p>{/if}
+						{#if r.status === 'scheduled'}<p class="text-[13px] text-muted">{r.rescheduleAsked ? 'You asked the facility to move this visit. They will text you a new time.' : 'We will remind you the day before and that morning.'}</p>{/if}
+						{#if r.status === 'cancelled'}<p class="text-[13px] text-muted">{r.cancelledBy === 'facility' ? `The facility could not take this visit. ${r.cancelReason && r.cancelReason !== 'other' ? DECLINE_REASONS[r.cancelReason as DeclineReason] + '.' : (r.cancelNote ?? '')} You can ask again any time.` : 'You cancelled this request.'}</p>{/if}
 						{#if r.status === 'no_show'}<p class="text-[13px] text-muted">No penalty. You can ask again any time.</p>{/if}
 					</div>
 					{#if open}
-						<div class="flex gap-2 sm:flex-col"><button type="button" onclick={() => cancel(r.id)} class="link h-11 flex-1 px-2 text-[15px]">Cancel request</button></div>
+						<div class="flex gap-2 sm:flex-col">{#if r.status === 'scheduled' && !r.rescheduleAsked}<button type="button" onclick={() => askMove(r.id)} class="link h-11 flex-1 px-2 text-[15px]">Ask to move</button>{/if}<button type="button" onclick={() => cancel(r.id)} class="link h-11 flex-1 px-2 text-[15px]">Cancel request</button></div>
 					{/if}
 				</li>
 			{/each}

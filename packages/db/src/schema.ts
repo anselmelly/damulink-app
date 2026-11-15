@@ -167,6 +167,10 @@ export const donationRequests = mysqlTable(
 		timeOfDay: mysqlEnum('time_of_day', ['morning', 'afternoon', 'any']).notNull(),
 		status: mysqlEnum('status', ['requested', 'scheduled', 'completed', 'cancelled', 'no_show']).notNull().default('requested'),
 		scheduledAt: datetime('scheduled_at', { fsp: 3 }),
+		cancelledBy: mysqlEnum('cancelled_by', ['donor', 'facility']),
+		cancelReason: varchar('cancel_reason', { length: 20 }), // from a fixed list, never a health reason
+		cancelNote: varchar('cancel_note', { length: 200 }),
+		rescheduleAsked: boolean('reschedule_asked').notNull().default(false),
 		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
 		updatedAt: datetime('updated_at', { fsp: 3 }).notNull(),
 	},

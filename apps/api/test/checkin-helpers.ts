@@ -23,3 +23,13 @@ export const verifiedDonor = (t: TestApp, facts: Record<string, unknown> = {}, o
 
 export const outcome = (t: TestApp, token: string, facilityId: string, code: string, body: unknown) => call(t, 'POST', ck(facilityId, code, '/outcome'), token, body)
 export const lookup = (t: TestApp, token: string, facilityId: string, code: string) => call(t, 'GET', ck(facilityId, code), token)
+
+/** A donor's appointment request at a facility, written straight into the table. */
+let ap = 0
+export async function appt(t: TestApp, userId: string, facilityId: string, over: Record<string, string | number | null> = {}) {
+	const id = (over.id as string) ?? `AP${String(++ap).padStart(4, '0')}`.padEnd(26, 'X')
+	const r = { kind: 'donate', days: 'mon,wed', time_of_day: 'any', status: 'requested', scheduled_at: null, reschedule_asked: 0, created_at: '2026-11-13 08:00:00', ...over }
+	await t.pool.query(`insert into donation_requests (id, user_id, facility_id, kind, days, time_of_day, status, scheduled_at, reschedule_asked, created_at, updated_at) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [id, userId, facilityId, r.kind, r.days, r.time_of_day, r.status, r.scheduled_at, r.reschedule_asked, r.created_at, r.created_at])
+	return id
+}
+export const dr = (facilityId: string, rest = '') => `/api/my-facilities/${facilityId}/donor-requests${rest}`

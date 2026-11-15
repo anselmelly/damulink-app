@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import {
+	askReschedule,
 	cancelDonationRequest,
 	deleteAccount,
 	facilityExists,
@@ -97,6 +98,10 @@ const view = ({ r, facilityName }: { r: DonationRequestRow; facilityName: string
 	status: r.status,
 	scheduledAt: r.scheduledAt?.toISOString() ?? null,
 	createdAt: r.createdAt.toISOString(),
+	rescheduleAsked: r.rescheduleAsked,
+	cancelledBy: r.cancelledBy,
+	cancelReason: r.cancelReason,
+	cancelNote: r.cancelNote,
 })
 
 /** Ask a facility for a blood type test or a donation. The facility approves it and sets a date (a later phase). */
@@ -123,6 +128,15 @@ meRoutes.post('/donation-requests/:id/cancel', async (c) => {
 	const id = c.req.param('id')
 	if (!(await findDonationRequest(db, id, user.id))) throw new ApiError(404, 'not_found', 'Not found.')
 	if (!(await cancelDonationRequest(db, id, user.id, clock.now()))) throw new ApiError(409, 'not_cancellable', 'This request can no longer be cancelled.')
+	return c.json(view((await findDonationRequest(db, id, user.id))!))
+})
+
+/** The donor asks the facility to move a booked visit; it then shows up in the facility's follow-up list. */
+meRoutes.post('/donation-requests/:id/reschedule', async (c) => {
+	const { db, clock, user } = c.var
+	const id = c.req.param('id')
+	if (!(await findDonationRequest(db, id, user.id))) throw new ApiError(404, 'not_found', 'Not found.')
+	if (!(await askReschedule(db, id, user.id, clock.now()))) throw new ApiError(409, 'not_bookable', 'Only a booked visit can be moved.')
 	return c.json(view((await findDonationRequest(db, id, user.id))!))
 })
 

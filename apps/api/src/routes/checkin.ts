@@ -9,8 +9,6 @@ import {
 	findResponse,
 	findUserById,
 	getCall,
-	getFacility,
-	getMembership,
 	getSample,
 	hit,
 	insertDonation,
@@ -45,6 +43,7 @@ import {
 	type OutcomeResult,
 } from '@damu/shared-types'
 import type { AppEnv } from '../app'
+import { desk } from '../lib/desk'
 import { getEligibilitySettings } from '../lib/eligibility'
 import { ApiError } from '../lib/errors'
 import { newId } from '../lib/id'
@@ -56,14 +55,6 @@ import { requireAuth, type AuthEnv } from '../middleware/auth'
 /** Mounted at /api/my-facilities/:id. Any member of a verified facility may check donors in; everyone else sees "not found". */
 export const checkinRoutes = new Hono<AppEnv>()
 
-async function desk(c: Context<AuthEnv>) {
-	const id = c.req.param('id') ?? ''
-	const m = await getMembership(c.var.db, id, c.var.user.id)
-	const f = m ? await getFacility(c.var.db, id) : undefined
-	if (!m || !f) throw new ApiError(404, 'not_found', 'Not found.')
-	if (f.status !== 'verified') throw new ApiError(403, 'facility_not_verified', 'Your facility must be verified to check donors in.')
-	return f
-}
 const notFound = () => new ApiError(404, 'not_found', 'No donor with that code.')
 const invalid = (fields: Record<string, string>) => new ApiError(422, 'invalid_input', 'Please check the highlighted fields.', fields)
 const ageOn = (dob: string, today: string) => {

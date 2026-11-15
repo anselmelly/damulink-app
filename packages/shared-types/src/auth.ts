@@ -77,4 +77,9 @@ export type DonationRequestView = {
 	status: 'requested' | 'scheduled' | 'completed' | 'cancelled' | 'no_show'
 	scheduledAt: string | null
 	createdAt: string
+	rescheduleAsked: boolean
+	/** Set when a facility declined or cancelled; the reason is one of a fixed list. */
+	cancelledBy: 'donor' | 'facility' | null
+	cancelReason: string | null
+	cancelNote: string | null
 }

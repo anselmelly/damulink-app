@@ -1,5 +1,5 @@
 import { type Db, type User } from '@damu/db'
-import { BRAND } from '@damu/shared-types'
+import { BRAND, DECLINE_REASONS, type DeclineReason } from '@damu/shared-types'
 import { textDonor } from './call-texts'
 import type { Sms } from './services'
 
@@ -23,3 +23,13 @@ export async function textWalkinInvite(sms: Sms, to: string, facilityName: strin
 		return false
 	}
 }
+
+const at = (d: Date) => d.toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Nairobi' })
+
+/** A visit was booked or moved. Date, place and the donor code, nothing else. */
+export const textBooked = (db: Db, sms: Sms, u: Pick<User, 'id' | 'phone' | 'smsOptIn'>, o: { facility: string; when: Date; code: string; kind: 'test' | 'donate'; moved: boolean }) =>
+	textDonor(db, sms, u, `${BRAND.name}: ${o.moved ? `your visit at ${o.facility} was moved to` : `you are booked at ${o.facility} on`} ${at(o.when)} for ${o.kind === 'donate' ? 'a donation' : 'a blood type test'}. Bring your donor code ${o.code}.`)
+
+/** A request was declined or a booked visit cancelled by the facility. Only the listed reason, never a note. */
+export const textVisitCancelled = (db: Db, sms: Sms, u: Pick<User, 'id' | 'phone' | 'smsOptIn'>, facility: string, reason: DeclineReason) =>
+	textDonor(db, sms, u, `${BRAND.name}: ${facility} could not take your visit. ${reason === 'other' ? 'Please contact the facility.' : `${DECLINE_REASONS[reason]}.`} You can ask again any time.`)

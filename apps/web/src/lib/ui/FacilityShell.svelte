@@ -18,6 +18,7 @@
 			{ key: 'status', label: 'Facility status', href: f ? `/facility/${f.id}` : undefined, icon: 'shield' },
 			{ key: 'requests', label: 'Requests', href: f ? `/facility/${f.id}/requests` : undefined, icon: 'clipboard' },
 			{ key: 'calls', label: 'Calls', href: f ? `/facility/${f.id}/calls` : undefined, icon: 'bell' },
+			{ key: 'donor-requests', label: 'Donor requests', href: f ? `/facility/${f.id}/donor-requests` : undefined, icon: 'user' },
 			{ key: 'checkin', label: 'Check-in', href: f ? `/facility/${f.id}/checkin` : undefined, icon: 'check' },
 			{ key: 'lab-results', label: 'Lab results', href: f ? `/facility/${f.id}/lab-results` : undefined, icon: 'drop' },
 			{ key: 'drives', label: 'Blood drives', icon: 'calendar' },
