@@ -59,8 +59,7 @@ It only **adds what is missing**: it never updates a row, skips any facility who
 On the server, from `/srv/damulink/current`:
 
 ```bash
-set -a; . /srv/damulink/shared/api.env; set +a
-node api/seed-demo.mjs /srv/damulink/shared/demo-accounts.txt   # writes the logins (mode 600); the password is never printed
+node --env-file=/srv/damulink/shared/api.env api/seed-demo.mjs /srv/damulink/shared/demo-accounts.txt   # writes the logins (mode 600); the password is never printed
 ```
 
 Sign in with a demo email, the password in that file, and the facility code. Running it again changes nothing.
