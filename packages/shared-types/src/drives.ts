@@ -65,3 +65,26 @@ export const driveHours = (starts: string, ends: string) => `${hm(starts)} to ${
 type When = { host: string; town: string; date: string; starts: string; ends: string; link: string }
 /** One text per donor per drive: no personal details, no host contact, no YES (it is not a call). */
 export const driveSms = (o: When) => `${BRAND.name}: Blood drive at ${o.host}, ${o.town}, ${driveDay(o.date)} ${hm(o.starts)}-${hm(o.ends)}. Details: ${o.link}. Reply STOP to stop alerts.`
+
+/** A guest says who they are; a signed-in donor sends nothing (the name comes from the account). */
+export const driveInterestInput = z.object({
+	name: z.string({ message: 'Enter your name' }).trim().min(2, 'Enter your name').max(100),
+	phone: z.string().trim().max(30).nullish().transform((v) => v || null),
+})
+export type PublicDrive = {
+	code: string
+	short: string
+	host: string
+	venue: string
+	town: string
+	date: string
+	starts: string
+	ends: string
+	text: string
+	facility: { name: string; town: string }
+	link: string
+	state: 'open' | 'ended' | 'cancelled'
+	/** true only for a signed-in donor who is on the list */
+	interested: boolean
+}
+export type PublicDriveList = { items: PublicDrive[] }

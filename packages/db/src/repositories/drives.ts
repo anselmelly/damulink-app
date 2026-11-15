@@ -1,6 +1,6 @@
 import { and, asc, count, desc, eq, inArray, max, sql } from 'drizzle-orm'
 import type { Db } from '../client'
-import { driveAlerts, driveInterest, drives } from '../schema'
+import { driveAlerts, driveInterest, drives, facilities } from '../schema'
 
 export type Drive = typeof drives.$inferSelect
 export type NewDrive = Omit<typeof drives.$inferInsert, 'number' | 'short'>
@@ -89,3 +89,37 @@ export const markDriveAlert = (db: Db, id: string, changes: Partial<typeof drive
 /** Facility suspended: its drives come down for good. */
 export const takeDownDrives = (db: Db, facilityId: string, now: Date) =>
 	db.update(drives).set({ status: 'taken_down', updatedAt: now }).where(and(eq(drives.facilityId, facilityId), inArray(drives.status, ['draft', 'published'])))
+
+// ---------------------------------------------------------------- the public side
+
+export type PublicDriveRow = { d: Drive; facilityName: string; facilityTown: string }
+
+/** Published public drives that have not ended, soonest first. `time` is now in Nairobi as HH:MM. */
+export async function listPublicDrives(db: Db, o: { day: string; time: string; town?: string }): Promise<PublicDriveRow[]> {
+	const rows = await db
+		.select({ d: drives, facilityName: facilities.name, facilityTown: facilities.town })
+		.from(drives)
+		.innerJoin(facilities, eq(facilities.id, drives.facilityId))
+		.where(and(eq(drives.status, 'published'), eq(drives.isPublic, true), sql`(${drives.date} > ${o.day} or (${drives.date} = ${o.day} and ${drives.ends} > ${o.time}))`, o.town ? sql`lower(${drives.town}) = lower(${o.town})` : undefined))
+		.orderBy(asc(drives.date), asc(drives.starts))
+		.limit(100)
+	return rows
+}
+
+/** A drive people can see: public, and published, closed or cancelled. Drafts, taken-down and SMS-only drives are not found. */
+export async function getPublicDrive(db: Db, key: { number: number } | { short: string }): Promise<PublicDriveRow | undefined> {
+	const [r] = await db
+		.select({ d: drives, facilityName: facilities.name, facilityTown: facilities.town })
+		.from(drives)
+		.innerJoin(facilities, eq(facilities.id, drives.facilityId))
+		.where(and('number' in key ? eq(drives.number, key.number) : eq(drives.short, key.short), eq(drives.isPublic, true), inArray(drives.status, ['published', 'closed', 'cancelled'])))
+		.limit(1)
+	return r
+}
+
+export async function hasInterest(db: Db, driveId: string, o: { userId?: string; phone?: string | null; name?: string }): Promise<boolean> {
+	const who = o.userId ? eq(driveInterest.userId, o.userId) : o.phone ? eq(driveInterest.phone, o.phone) : and(sql`${driveInterest.userId} is null`, sql`${driveInterest.phone} is null`, sql`lower(${driveInterest.name}) = lower(${o.name ?? ''})`)
+	const [r] = await db.select({ id: driveInterest.id }).from(driveInterest).where(and(eq(driveInterest.driveId, driveId), who)).limit(1)
+	return !!r
+}
+export const addInterest = (db: Db, row: typeof driveInterest.$inferInsert) => db.insert(driveInterest).values(row)

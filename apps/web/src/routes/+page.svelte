@@ -2,6 +2,8 @@
 	import { BRAND } from '$lib/brand'
 	import { urgencyLabel } from '$lib/calls'
 	import { ago } from '$lib/requests'
+	import { dayOf, longDay, monthOf } from '$lib/drives'
+	import { driveHours } from '@damu/shared-types'
 	import CallCard from '$lib/ui/CallCard.svelte'
 	import Icon from '$lib/ui/Icon.svelte'
 	import PublicFooter from '$lib/ui/PublicFooter.svelte'
@@ -93,6 +95,19 @@
 		</section>
 	{/if}
 
+
+	{#if data.drives.length}
+		<section class="bg-white py-16 md:py-24">
+			<div class="mx-auto max-w-6xl px-6">
+				<div class="flex items-end justify-between gap-4"><div><p class="eyebrow">Blood drives</p><h2 class="mt-2 text-[30px] font-extrabold leading-9 tracking-tight md:text-[40px] md:leading-[46px]">Donate with your school, church, or company</h2></div><a href="/drives" class="link flex shrink-0 items-center gap-1 text-[15px]">See all drives<Icon name="arrow" class="h-5 w-5" /></a></div>
+				<ul class="mt-8 grid gap-5 md:grid-cols-2">
+					{#each data.drives as d}
+						<li><a href="/drives/{d.code}" class="card flex items-center gap-5 p-5 hover:bg-rose-50"><span class="flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-xl bg-rose-600 text-white"><span class="text-[12px] font-bold leading-4">{monthOf(d.date)}</span><span class="text-[26px] font-extrabold leading-7">{dayOf(d.date)}</span></span><span class="min-w-0"><span class="block text-lg font-bold leading-6">{d.host} blood drive</span><span class="block text-[15px] text-muted">{longDay(d.date).split(' ')[0]}, {driveHours(d.starts, d.ends)} · {d.venue}, {d.town}</span><span class="block text-[13px] text-muted">Run by {d.facility.name}</span></span></a></li>
+					{/each}
+				</ul>
+			</div>
+		</section>
+	{/if}
 
 	<section id="facilities" class="scroll-mt-20 bg-rose-600 py-16 text-white md:py-20">
 		<div class="mx-auto flex max-w-6xl flex-col gap-6 px-6 md:flex-row md:items-center md:justify-between">
