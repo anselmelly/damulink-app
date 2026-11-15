@@ -29,6 +29,7 @@
 			f = await auth.call<MyFacilityView>(`/my-facilities/${id}`)
 		} catch {}
 	})
+	const driveId = page.url.searchParams.get('drive') ?? undefined
 	const again = () => {
 		name = dob = weight = bloodType = phone = ''
 		sex = ''
@@ -42,7 +43,7 @@
 		error = ''
 		errors = {}
 		try {
-			done = await auth.call(`/my-facilities/${id}/walkins`, { body: { name, sex: sex || undefined, dateOfBirth: dob, weightKg: weight.trim() ? Number(weight) : undefined, bloodType: bloodType || undefined, outcome, invitePhone: invite && phone.trim() ? phone : undefined } })
+			done = await auth.call(`/my-facilities/${id}/walkins`, { body: { name, sex: sex || undefined, dateOfBirth: dob, weightKg: weight.trim() ? Number(weight) : undefined, bloodType: bloodType || undefined, outcome, invitePhone: invite && phone.trim() ? phone : undefined, driveId } })
 		} catch (err) {
 			if (err instanceof ApiError) {
 				errors = err.fields
@@ -67,7 +68,7 @@
 			<h2 class="text-[26px] font-extrabold leading-8 tracking-tight">{outcome === 'donated' ? 'Donation recorded' : outcome === 'test' ? 'Test recorded' : 'Deferral recorded'}</h2>
 			<p class="max-w-md text-base leading-6 text-muted">No account was created, so no contact details are kept.{done.inviteSent ? ' An invitation was texted.' : ' Offer to register them so medical facilities can reach them when their blood type is needed.'}</p>
 			{#if done.warning}<p class="badge badge-warn">Weight is under 50 kg. The facility decides.</p>{/if}
-			<div class="mt-2 flex w-full max-w-sm flex-col gap-3"><button type="button" class="btn-primary" onclick={again}>Add another walk-in</button><a class="btn-secondary" href="/facility/{id}/checkin">Done</a></div>
+			<div class="mt-2 flex w-full max-w-sm flex-col gap-3"><button type="button" class="btn-primary" onclick={again}>Add another walk-in</button><a class="btn-secondary" href={driveId ? `/facility/${id}/drives/${driveId}` : `/facility/${id}/checkin`}>Done</a></div>
 		</section>
 	{:else}
 		<form class="card flex flex-col gap-5 p-6 md:p-8" onsubmit={submit}>
@@ -97,7 +98,7 @@
 			<label class="notice cursor-pointer"><input type="checkbox" bind:checked={invite} class="mt-0.5 h-6 w-6 shrink-0" /><span class="flex flex-col"><span class="font-semibold">They want a {BRAND.name} account</span><span class="text-muted">Only if they say yes. Otherwise nothing but the details above is kept.</span></span></label>
 			{#if invite}<TextField id="phone" label="Phone" bind:value={phone} type="tel" inputmode="tel" error={errors.invitePhone ?? ''} help="We text a link to set up the account. The number is deleted right after." />{/if}
 			{#if error}<p class="field-error" role="alert"><Icon name="alert" class="h-4 w-4" />{error}</p>{/if}
-			<div class="flex gap-3"><a class="btn-secondary sm:!w-auto sm:px-8" href="/facility/{id}/checkin">Cancel</a><button class="btn-primary flex-1" disabled={busy || !name.trim() || !sex || !dob}>{busy ? 'Saving…' : 'Record walk-in'}</button></div>
+			<div class="flex gap-3"><a class="btn-secondary sm:!w-auto sm:px-8" href={driveId ? `/facility/${id}/drives/${driveId}` : `/facility/${id}/checkin`}>Cancel</a><button class="btn-primary flex-1" disabled={busy || !name.trim() || !sex || !dob}>{busy ? 'Saving…' : 'Record walk-in'}</button></div>
 		</form>
 	{/if}
 </FacilityShell>

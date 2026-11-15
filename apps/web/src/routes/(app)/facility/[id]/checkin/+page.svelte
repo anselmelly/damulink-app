@@ -29,6 +29,7 @@
 	let bloodType = $state('')
 	let pauseUntil = $state('')
 	let recent = $state<RecentRequest[]>([])
+	const driveId = page.url.searchParams.get('drive') ?? undefined
 	const loadRecent = async () => (recent = await auth.call<RecentRequest[]>(`/my-facilities/${id}/checkin-recent`).catch(() => []))
 	const shown = $derived(recent.filter((r) => !code.trim() || `${r.name} ${r.code}`.toLowerCase().includes(code.trim().toLowerCase())))
 	const clock = (iso: string) => new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Nairobi' })
@@ -84,11 +85,13 @@
 		error = ''
 		errors = {}
 		const w = weight.trim() ? Number(weight) : undefined
-		const body =
-			tab === 'donated' ? { outcome: tab, weightKg: w, bagNumber: bag || undefined, callId: callId || undefined }
+		const body = {
+			...(tab === 'donated' ? { outcome: tab, weightKg: w, bagNumber: bag || undefined, callId: callId || undefined }
 			: tab === 'test' ? { outcome: tab, weightKg: w, bloodType: testType === 'later' ? 'later' : bloodType }
 			: tab === 'deferred' ? { outcome: tab, returnAfter: pauseUntil || undefined }
-			: { outcome: tab }
+			: { outcome: tab }),
+			driveId,
+		}
 		try {
 			saved = await auth.call<OutcomeResult>(`/my-facilities/${id}/checkin/${encodeURIComponent(card.code)}/outcome`, { body })
 		} catch (err) {

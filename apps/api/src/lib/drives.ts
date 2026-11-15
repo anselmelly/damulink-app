@@ -1,8 +1,9 @@
-import { alertedForDrive, markDriveAlert, publishedSmsDrives, reserveDriveAlert, type Db, type Drive } from '@damu/db'
-import { BLOOD_TYPES, driveSms } from '@damu/shared-types'
+import { alertedForDrive, closeDriveRow, deleteInterest, driveInterestList, markDriveAlert, publishedSmsDrives, reserveDriveAlert, staleDrives, sweepInterest, type Db, type Drive } from '@damu/db'
+import { BLOOD_TYPES, driveCancelledSms, driveChangedSms, driveSms } from '@damu/shared-types'
 import type { AppConfig } from '../app'
 import { matchDonors } from './alerts'
 import { newId } from './id'
+import { numberSetting } from './requests'
 import type { Sms } from './services'
 
 /** The drive starts at `starts` on its date, Nairobi time. */
@@ -41,4 +42,35 @@ export async function runAllDriveAlerts(db: Db, sms: Sms, config: AppConfig, now
 	let n = 0
 	for (const d of await publishedSmsDrives(db, nairobiDay(now))) n += await runDriveAlerts(db, sms, config, d, now)
 	return n
+}
+
+/** One text when a drive moves or is called off: interested guests with a phone, and signed-in donors with SMS on and a verified phone. Cancelling then deletes the list. */
+export async function sendDriveNotice(db: Db, sms: Sms, config: AppConfig, d: Drive, kind: 'changed' | 'cancelled'): Promise<number> {
+	const seen = new Set<string>()
+	for (const r of await driveInterestList(db, d.id)) {
+		const phone = r.userId ? (r.smsOk ? r.userPhone : null) : r.phone
+		if (phone) seen.add(phone)
+	}
+	const text = kind === 'cancelled' ? driveCancelledSms(d) : driveChangedSms({ ...d, link: driveLink(config.appUrl, d.short).replace(/^https?:\/\//, '') })
+	let n = 0
+	for (const to of seen) {
+		try {
+			await sms.send({ to, text })
+			n++
+		} catch (e) {
+			console.error('drive notice failed', e instanceof Error ? e.message : e)
+		}
+	}
+	if (kind === 'cancelled') await deleteInterest(db, d.id) // a called-off drive has no use for the list
+	return n
+}
+
+/** The clean-up, run by the tick: a drive still published the day after its date closes itself, and old interest rows go. */
+export async function sweepDrives(db: Db, now: Date): Promise<number> {
+	const day = nairobiDay(now)
+	const old = await staleDrives(db, day)
+	for (const d of old) await closeDriveRow(db, d, now)
+	const days = await numberSetting(db, 'retention.drive_rsvp_days', 1)
+	await sweepInterest(db, new Date(now.getTime() - days * 86_400_000), day)
+	return old.length
 }

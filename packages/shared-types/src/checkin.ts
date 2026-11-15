@@ -18,10 +18,10 @@ const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Enter a date')
 
 /** What happened at the desk. A weight is always optional: under 50 kg only warns, the facility decides. */
 export const outcomeInput = z.discriminatedUnion('outcome', [
-	z.object({ outcome: z.literal('donated'), weightKg: weight, bagNumber: bag, callId: z.string().max(26).optional() }),
-	z.object({ outcome: z.literal('test'), weightKg: weight, bloodType: z.enum([...BLOOD_TYPES, 'later']) }),
-	z.object({ outcome: z.literal('deferred'), returnAfter: day.optional() }),
-	z.object({ outcome: z.literal('no_show') }),
+	z.object({ outcome: z.literal('donated'), weightKg: weight, bagNumber: bag, callId: z.string().max(26).optional(), driveId: z.string().max(26).optional() }),
+	z.object({ outcome: z.literal('test'), weightKg: weight, bloodType: z.enum([...BLOOD_TYPES, 'later']), driveId: z.string().max(26).optional() }),
+	z.object({ outcome: z.literal('deferred'), returnAfter: day.optional(), driveId: z.string().max(26).optional() }),
+	z.object({ outcome: z.literal('no_show'), driveId: z.string().max(26).optional() }),
 ])
 export type OutcomeInput = z.infer<typeof outcomeInput>
 
@@ -36,6 +36,7 @@ export const walkinInput = z.object({
 	outcome: z.enum(['donated', 'test', 'deferred']),
 	bagNumber: bag,
 	invitePhone: z.string().trim().max(20).optional(),
+	driveId: z.string().max(26).optional(),
 })
 export type WalkinInput = z.infer<typeof walkinInput>
 

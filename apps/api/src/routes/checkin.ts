@@ -21,6 +21,7 @@ import {
 	recordDonorFacts,
 	pendingSamples,
 	recentRequests,
+	tieableDrive,
 	responseCounts,
 	writeAudit,
 	type Call,
@@ -44,6 +45,7 @@ import {
 } from '@damu/shared-types'
 import type { AppEnv } from '../app'
 import { desk } from '../lib/desk'
+import { nairobiDay } from '../lib/drives'
 import { getEligibilitySettings } from '../lib/eligibility'
 import { ApiError } from '../lib/errors'
 import { newId } from '../lib/id'
@@ -63,6 +65,12 @@ const ageOn = (dob: string, today: string) => {
 	return ty - y - (tm < m || (tm === m && td < d) ? 1 : 0)
 }
 const dayOf = (d: Date) => d.toISOString().slice(0, 10)
+/** A drive id must be a published drive of this facility running today. */
+async function tied(db: Db, driveId: string | undefined, facilityId: string, now: Date) {
+	if (!driveId) return null
+	if (!(await tieableDrive(db, driveId, facilityId, nairobiDay(now)))) throw invalid({ driveId: 'Choose a drive that is running today' })
+	return driveId
+}
 
 /** One 404 for every kind of "no such donor": unknown, regenerated, malformed, under 18, over 65, deleted, suspended. */
 async function donorFor(c: Context<AuthEnv>): Promise<User> {
@@ -139,9 +147,10 @@ checkinRoutes.post('/checkin/:code/outcome', requireAuth, async (c: Context<Auth
 	const input = parseInput(outcomeInput, await readJson(c))
 	const now = clock.now()
 	const today = dayOf(now)
+	const driveId = await tied(db, input.driveId, f.id, now)
 	const s = await getEligibilitySettings(db)
 	const booked = await bookedVisit(db, u.id, f.id)
-	const visit = { id: newId(now.getTime()), userId: u.id, facilityId: f.id, kind: input.outcome === 'test' ? ('test' as const) : input.outcome === 'donated' ? ('donated' as const) : input.outcome, appointmentId: booked?.id ?? null, recordedBy: user.id, createdAt: now }
+	const visit = { id: newId(now.getTime()), userId: u.id, facilityId: f.id, kind: input.outcome === 'test' ? ('test' as const) : input.outcome === 'donated' ? ('donated' as const) : input.outcome, appointmentId: booked?.id ?? null, driveId, recordedBy: user.id, createdAt: now }
 	const result: OutcomeResult = { outcome: visit.kind }
 	let detail: string | undefined
 
@@ -224,6 +233,7 @@ checkinRoutes.post('/walkins', requireAuth, async (c: Context<AuthEnv>) => {
 	const input = parseInput(walkinInput, await readJson(c))
 	const now = clock.now()
 	const today = dayOf(now)
+	const driveId = await tied(db, input.driveId, f.id, now)
 	const s = await getEligibilitySettings(db)
 	const phone = input.invitePhone ? normalizePhone(input.invitePhone) : null
 	if (input.invitePhone && !phone) throw invalid({ invitePhone: 'Enter a valid phone number' })
@@ -232,7 +242,7 @@ checkinRoutes.post('/walkins', requireAuth, async (c: Context<AuthEnv>) => {
 		if (e.status === 'too_young' || e.status === 'too_old') throw invalid({ dateOfBirth: `Donors must be ${s.minAge} to ${s.maxAge}` })
 	}
 	const id = newId(now.getTime())
-	await insertWalkin(db, { id, facilityId: f.id, name: input.name, sex: input.sex, dateOfBirth: input.dateOfBirth, weightKg: input.weightKg ?? null, bloodType: input.bloodType ?? null, outcome: input.outcome, bagNumber: input.bagNumber || null, invitePhone: phone, recordedBy: user.id, createdAt: now })
+	await insertWalkin(db, { id, facilityId: f.id, name: input.name, sex: input.sex, dateOfBirth: input.dateOfBirth, weightKg: input.weightKg ?? null, bloodType: input.bloodType ?? null, outcome: input.outcome, bagNumber: input.bagNumber || null, driveId, invitePhone: phone, recordedBy: user.id, createdAt: now })
 	let inviteSent = false
 	if (phone) {
 		inviteSent = await textWalkinInvite(sms, phone, f.name, `${config.appUrl}/join/${f.slug}`)

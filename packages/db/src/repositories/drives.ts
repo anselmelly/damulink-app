@@ -1,6 +1,6 @@
 import { and, asc, count, desc, eq, inArray, max, sql } from 'drizzle-orm'
 import type { Db } from '../client'
-import { driveAlerts, driveInterest, drives, facilities } from '../schema'
+import { driveAlerts, driveInterest, drives, facilities, labSamples, users, visits, walkinVisits } from '../schema'
 
 export type Drive = typeof drives.$inferSelect
 export type NewDrive = Omit<typeof drives.$inferInsert, 'number' | 'short'>
@@ -123,3 +123,73 @@ export async function hasInterest(db: Db, driveId: string, o: { userId?: string;
 	return !!r
 }
 export const addInterest = (db: Db, row: typeof driveInterest.$inferInsert) => db.insert(driveInterest).values(row)
+
+// ---------------------------------------------------------------- the day, closing, the summary
+
+export async function driveInterestList(db: Db, driveId: string) {
+	return db
+		.select({ id: driveInterest.id, name: driveInterest.name, phone: driveInterest.phone, userId: driveInterest.userId, arrivedAt: driveInterest.arrivedAt, userPhone: users.phone, smsOk: sql<number>`(${users.smsOptIn} = 1 and ${users.phoneVerifiedAt} is not null)` })
+		.from(driveInterest)
+		.leftJoin(users, eq(users.id, driveInterest.userId))
+		.where(eq(driveInterest.driveId, driveId))
+		.orderBy(asc(driveInterest.createdAt), asc(driveInterest.id))
+}
+
+/** Ticks or unticks one arrival. False when the row is not on this drive's list. */
+export async function setArrived(db: Db, driveId: string, id: string, at: Date | null): Promise<boolean> {
+	const [r] = await db.select({ id: driveInterest.id }).from(driveInterest).where(and(eq(driveInterest.id, id), eq(driveInterest.driveId, driveId))).limit(1)
+	if (!r) return false
+	await db.update(driveInterest).set({ arrivedAt: at }).where(eq(driveInterest.id, id))
+	return true
+}
+
+export const deleteInterest = (db: Db, driveId: string) => db.delete(driveInterest).where(eq(driveInterest.driveId, driveId))
+
+/** Closing keeps the counts and deletes the names and phones. */
+export async function closeDriveRow(db: Db, d: Drive, now: Date): Promise<void> {
+	const [i] = await db.select({ total: count(), came: sql<number>`coalesce(sum(${driveInterest.arrivedAt} is not null), 0)` }).from(driveInterest).where(eq(driveInterest.driveId, d.id))
+	await db.update(drives).set({ status: 'closed', closedAt: now, interestTotal: Number(i?.total ?? 0), interestCame: Number(i?.came ?? 0), updatedAt: now }).where(eq(drives.id, d.id))
+	await deleteInterest(db, d.id)
+}
+
+/** What happened at a drive, from the visits and walk-ins tied to it. Counts only. */
+export async function driveCounts(db: Db, d: Drive) {
+	const v = await db.select({ k: visits.kind, n: count() }).from(visits).where(and(eq(visits.driveId, d.id), sql`${visits.kind} != 'no_show'`)).groupBy(visits.kind)
+	const w = await db.select({ k: walkinVisits.outcome, n: count() }).from(walkinVisits).where(eq(walkinVisits.driveId, d.id)).groupBy(walkinVisits.outcome)
+	const pick = (rows: { k: string; n: number }[]) => Object.fromEntries(rows.map((r) => [r.k, Number(r.n)])) as Record<string, number>
+	const [vv, ww] = [pick(v), pick(w)]
+	const sum = (o: Record<string, number>) => Object.values(o).reduce((a, b) => a + b, 0)
+	// "signed up with us on the day": the facility is their home facility and the account was made on the drive date (Nairobi)
+	const [s] = await db.select({ n: count() }).from(users).where(and(eq(users.homeFacilityId, d.facilityId), sql`date(date_add(${users.createdAt}, interval 3 hour)) = ${d.date}`))
+	return {
+		checkedIn: sum(vv) + sum(ww),
+		donated: (vv.donated ?? 0) + (ww.donated ?? 0),
+		deferred: (vv.deferred ?? 0) + (ww.deferred ?? 0),
+		tested: (vv.test ?? 0) + (ww.test ?? 0),
+		walkins: sum(ww),
+		byCode: sum(vv),
+		signups: Number(s?.n ?? 0),
+	}
+}
+
+/** Blood types of the donations at this drive (verified types only), and results still waiting. */
+export async function driveBloodTypes(db: Db, d: Drive): Promise<{ types: Record<string, number>; pending: number }> {
+	const a = await db.select({ t: users.bloodType, n: count() }).from(visits).innerJoin(users, eq(users.id, visits.userId)).where(and(eq(visits.driveId, d.id), eq(visits.kind, 'donated'), sql`${users.bloodType} is not null`)).groupBy(users.bloodType)
+	const b = await db.select({ t: walkinVisits.bloodType, n: count() }).from(walkinVisits).where(and(eq(walkinVisits.driveId, d.id), eq(walkinVisits.outcome, 'donated'), sql`${walkinVisits.bloodType} is not null`)).groupBy(walkinVisits.bloodType)
+	const types: Record<string, number> = {}
+	for (const r of [...a, ...b]) types[r.t!] = (types[r.t!] ?? 0) + Number(r.n)
+	const [p] = await db.select({ n: count() }).from(labSamples).innerJoin(visits, eq(visits.donationId, labSamples.donationId)).where(and(eq(visits.driveId, d.id), eq(labSamples.status, 'pending')))
+	return { types, pending: Number(p?.n ?? 0) }
+}
+
+export const staleDrives = (db: Db, day: string) => db.select().from(drives).where(and(eq(drives.status, 'published'), sql`${drives.date} < ${day}`))
+
+/** Interest rows older than the cutoff, on drives that are not running any more. */
+export const sweepInterest = (db: Db, cutoff: Date, day: string) =>
+	db.delete(driveInterest).where(and(sql`${driveInterest.createdAt} < ${cutoff}`, sql`${driveInterest.driveId} in (select id from drives where status != 'published' or date < ${day})`))
+
+/** The drive a desk may tie a visit to: published, this facility's, running today. */
+export async function tieableDrive(db: Db, id: string, facilityId: string, day: string): Promise<boolean> {
+	const [r] = await db.select({ id: drives.id }).from(drives).where(and(eq(drives.id, id), eq(drives.facilityId, facilityId), eq(drives.status, 'published'), eq(drives.date, day))).limit(1)
+	return !!r
+}

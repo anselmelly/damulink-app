@@ -88,3 +88,32 @@ export type PublicDrive = {
 	interested: boolean
 }
 export type PublicDriveList = { items: PublicDrive[] }
+
+/** One text to interested people when a drive moves or is called off. No host contact, no YES. */
+export const driveChangedSms = (o: When) => `${BRAND.name}: The blood drive at ${o.host}, ${o.town} has changed. Now ${driveDay(o.date)} ${hm(o.starts)}-${hm(o.ends)}. Details: ${o.link}. Reply STOP to stop alerts.`
+export const driveCancelledSms = (o: { host: string; town: string; date: string }) => `${BRAND.name}: The blood drive at ${o.host}, ${o.town} on ${driveDay(o.date)} has been cancelled. Sorry about that. Reply STOP to stop alerts.`
+
+export const driveArrivedInput = z.object({ arrived: z.boolean({ message: 'Send true or false' }) })
+
+export type DriveDay = DriveDetail & {
+	counts: { checkedIn: number; donated: number; walkins: number; signups: number }
+	percent: number | null
+	canClose: boolean
+	canCancel: boolean
+	people: { id: string; name: string; phone: string | null; source: 'account' | 'guest'; arrived: boolean }[]
+}
+export type DriveSummary = {
+	code: string
+	host: string
+	venue: string
+	town: string
+	date: string
+	starts: string
+	ends: string
+	target: number | null
+	percent: number | null
+	counts: { checkedIn: number; donated: number; deferred: number; tested: number; walkins: number; byCode: number }
+	came: { interested: number; interestedCame: number; byCode: number; walkins: number; signups: number }
+	bloodTypes: Record<string, number>
+	pendingResults: number
+}
