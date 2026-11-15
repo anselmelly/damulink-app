@@ -53,12 +53,15 @@ export const publishInput = z.object({
 	isPublic: z.boolean(),
 	smsEnabled: z.boolean(),
 })
+export const alertPreviewInput = z.object({ types, urgency: z.enum(URGENCIES) })
 export const callEditInput = z.object({ types: types.optional(), publicText: z.string().trim().max(500).optional() })
 export const extendInput = z.object({ days: z.number().int().min(1, 'Choose 1, 2 or 3 days').max(CALL_DEFAULTS.extendStepMax, 'Choose 1, 2 or 3 days') })
 export const closeInput = z.object({ reason: z.enum(CLOSE_REASONS, { errorMap: () => ({ message: 'Choose a reason' }) }) })
 export const scheduleInput = z.object({ scheduledAt: z.string().refine((s) => !Number.isNaN(Date.parse(s)), 'Enter a date and time') })
 
 // ---------- what the screens receive
+export type AlertPreview = { rings: { ring: number; count: number }[]; total: number; text: string; length: number }
+export type RingStat = { ring: number; toAlert: number; alerted: number; replied: number }
 export type CallBrief = { id: string; number: string; short: string; status: CallStatus; closesAt: string; units: number; covered: number }
 export type PublishPreview = { compatibleTypes: string[]; suggestedText: string; textMax: number; urgency: string; bloodType: string; units: number; facilityName: string; facilityTown: string }
 export type CallItem = { id: string; number: string; short: string; status: CallStatus; urgency: string; bloodType: string; requestId: string; requestNumber: string; publishedAt: string; closesAt: string; stillNeeded: number; yes: number }

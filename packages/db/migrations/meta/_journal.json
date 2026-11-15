@@ -71,6 +71,13 @@
       "when": 1794709474915,
       "tag": "0009_calls",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1794711241722,
+      "tag": "0010_sms_alerts",
+      "breakpoints": true
     }
   ]
 }

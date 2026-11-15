@@ -98,7 +98,7 @@ requestRoutes.post('/:id/cancel', requireAuth, async (c: Context<AuthEnv>) => {
 	if (!(await moveRequest(db, r.id, REQUEST_MOVES.cancel.from, { status: REQUEST_MOVES.cancel.to, updatedAt: now }))) throw new ApiError(409, 'invalid_move', 'This request can no longer be cancelled.')
 	await addRequestEvent(db, { id: newId(now.getTime()), requestId: r.id, kind: 'cancelled', actorId: user.id, note: reason || null, visibleToRequester: true, createdAt: now })
 	const live = await getCallForRequest(db, r.id)
-	if (live) await endCall(db, live, { status: 'closed', reason: 'cancelled', now, actorId: user.id, closeRequest: false })
+	if (live) await endCall(db, live, { status: 'closed', reason: 'cancelled', now, actorId: user.id, closeRequest: false, sms: c.var.sms })
 	await writeAudit(db, { actorId: user.id, action: 'request.cancel', target: r.id }, now)
 	return c.json(await view(c, r.id))
 })

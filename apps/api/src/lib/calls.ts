@@ -1,6 +1,8 @@
 import { addRequestEvent, dueCalls, getCall, getCallForRequest, liveCallsOf, moveCall, moveRequest, responseCounts, type Call, type Db } from '@damu/db'
 import { CALL_DEFAULTS, REQUEST_MOVES, formatCallNumber, type CallBrief, type CallStatus, type CallUnits } from '@damu/shared-types'
 import { newId } from './id'
+import { thankDonors } from './call-texts'
+import type { Sms } from './services'
 
 const ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789' // no look-alikes (i l o 0 1)
 export function newShort(len = 5): string {
@@ -17,18 +19,19 @@ export const extendRoom = (c: Call): number => (c.status !== 'live' ? 0 : Math.m
  * Ends a live call. Only the caller that wins the move does the rest, so a close racing an expiry happens once.
  * The request closes with it, unless the request itself was just cancelled.
  */
-export async function endCall(db: Db, c: Call, o: { status: Exclude<CallStatus, 'live'>; reason: string | null; now: Date; actorId: string | null; closeRequest?: boolean }): Promise<boolean> {
+export async function endCall(db: Db, c: Call, o: { status: Exclude<CallStatus, 'live'>; reason: string | null; now: Date; actorId: string | null; closeRequest?: boolean; sms?: Sms }): Promise<boolean> {
 	if (!(await moveCall(db, c.id, ['live'], { status: o.status, closedAt: o.now, closeReason: o.reason }))) return false
 	if (o.closeRequest !== false && (await moveRequest(db, c.requestId, REQUEST_MOVES.close.from, { status: REQUEST_MOVES.close.to, updatedAt: o.now }))) {
 		await addRequestEvent(db, { id: newId(o.now.getTime()), requestId: c.requestId, kind: 'closed', actorId: o.actorId, note: o.reason, visibleToRequester: true, createdAt: o.now })
 	}
+	if (o.sms) await thankDonors(db, o.sms, c)
 	return true
 }
 
 /** Closes every live call whose time is up. Returns how many. Safe to run any time, from any number of places. */
-export async function expireCalls(db: Db, now: Date): Promise<number> {
+export async function expireCalls(db: Db, now: Date, sms?: Sms): Promise<number> {
 	let n = 0
-	for (const c of await dueCalls(db, now)) if (await endCall(db, c, { status: 'expired', reason: 'expired', now, actorId: null })) n++
+	for (const c of await dueCalls(db, now)) if (await endCall(db, c, { status: 'expired', reason: 'expired', now, actorId: null, sms })) n++
 	return n
 }
 

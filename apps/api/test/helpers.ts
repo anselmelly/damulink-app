@@ -9,7 +9,7 @@ export type TestClock = ReturnType<typeof fixedClock>
 export const TEST_SECRET = 'test-secret-test-secret-test-secret-0123456789'
 
 /** One app over the test database. The pool is shared by the file; tests clear the tables they use. */
-export function makeTestApp(opts: { clock?: Clock; allowedOrigins?: string[]; fixedOtp?: string } = {}) {
+export function makeTestApp(opts: { clock?: Clock; allowedOrigins?: string[]; fixedOtp?: string; fixedOtpPhones?: string[] } = {}) {
 	const { db, pool } = makeDb({
 		host: process.env.DB_HOST ?? '127.0.0.1',
 		port: Number(process.env.DB_PORT ?? 3306),
@@ -25,7 +25,7 @@ export function makeTestApp(opts: { clock?: Clock; allowedOrigins?: string[]; fi
 		clock,
 		mailer: mail,
 		sms,
-		config: { jwtSecret: TEST_SECRET, pbkdf2Iterations: 1000, fixedOtp: opts.fixedOtp, appUrl: 'http://localhost:5173', allowedOrigins: opts.allowedOrigins ?? ['http://localhost:5173'] },
+		config: { cronKey: 'test-cron-key', webhookKey: 'test-hook-key', jwtSecret: TEST_SECRET, pbkdf2Iterations: 1000, fixedOtp: opts.fixedOtp, fixedOtpPhones: opts.fixedOtpPhones, appUrl: 'http://localhost:5173', allowedOrigins: opts.allowedOrigins ?? ['http://localhost:5173'] },
 	})
 	return { app, db, pool, clock, mail, sms }
 }
@@ -38,7 +38,7 @@ export async function json<T = any>(res: Response): Promise<T> {
 /** Empties the tables phase 1 uses. TRUNCATE skips the audit log's delete guard on purpose. */
 export async function resetAccounts({ db }: TestApp) {
 	await db.execute(sql`SET FOREIGN_KEY_CHECKS = 0`)
-	for (const t of ['facility_invites', 'audit_log', 'facility_events', 'facility_members', 'donor_prefs', 'donation_requests', 'auth_tokens', 'phone_otps', 'users', 'user_extra_facilities', 'facility_requests', 'blood_requests', 'request_events', 'calls', 'call_responses', 'refresh_tokens', 'rate_limits', 'facilities']) await db.execute(sql.raw(`TRUNCATE TABLE \`${t}\``))
+	for (const t of ['facility_invites', 'audit_log', 'facility_events', 'facility_members', 'donor_prefs', 'donation_requests', 'auth_tokens', 'phone_otps', 'users', 'user_extra_facilities', 'facility_requests', 'blood_requests', 'request_events', 'calls', 'call_responses', 'call_alerts', 'refresh_tokens', 'rate_limits', 'facilities']) await db.execute(sql.raw(`TRUNCATE TABLE \`${t}\``))
 	await db.execute(sql`SET FOREIGN_KEY_CHECKS = 1`)
 }
 

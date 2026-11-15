@@ -57,12 +57,10 @@ describe('publishing an approved request as a call', () => {
 			expect((await json(res)).error.fields.publicText).toBeTruthy()
 		}
 	})
-	it('needs at least one of the public page and SMS; SMS cannot be switched on yet', async () => {
+	it('needs at least one of the public page and SMS', async () => {
 		const a = await approved(t)
 		expect((await publish(t, a.adminToken, a.id, a.r.id, { isPublic: false, smsEnabled: false })).status).toBe(422)
-		const sms = await publish(t, a.adminToken, a.id, a.r.id, { smsEnabled: true })
-		expect(sms.status).toBe(422)
-		expect((await json(sms)).error.fields.smsEnabled).toBeTruthy()
+		expect((await publish(t, a.adminToken, a.id, a.r.id, { isPublic: false, smsEnabled: true })).status).toBe(201)
 	})
 	it('a facility that is not verified cannot publish', async () => {
 		const a = await approved(t)

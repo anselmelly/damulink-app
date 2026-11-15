@@ -318,6 +318,7 @@ export const calls = mysqlTable(
 		publishedAt: datetime('published_at', { fsp: 3 }).notNull(),
 		closesAt: datetime('closes_at', { fsp: 3 }).notNull(),
 		extendedDays: int('extended_days').notNull().default(0),
+		ringSent: int('ring_sent').notNull().default(0), // the furthest ring alerted so far (SMS)
 		closedAt: datetime('closed_at', { fsp: 3 }),
 		closeReason: varchar('close_reason', { length: 20 }),
 		createdBy: varchar('created_by', { length: 26 }).notNull(),
@@ -339,4 +340,20 @@ export const callResponses = mysqlTable(
 		donationId: varchar('donation_id', { length: 26 }),
 	},
 	(t) => [uniqueIndex('call_responses_donor_uq').on(t.callId, t.userId), index('call_responses_call_idx').on(t.callId, t.repliedAt)],
+)
+
+/** One SMS alert to one donor for one call. Reserved before sending, so a retry never texts anyone twice; also the record of what was sent (no text, no full number). */
+export const callAlerts = mysqlTable(
+	'call_alerts',
+	{
+		id: varchar('id', { length: 26 }).primaryKey(),
+		callId: varchar('call_id', { length: 26 }).notNull(),
+		userId: varchar('user_id', { length: 26 }).notNull(),
+		ring: int('ring').notNull(),
+		status: mysqlEnum('status', ['reserved', 'sent', 'failed']).notNull(),
+		error: varchar('error', { length: 200 }),
+		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
+		sentAt: datetime('sent_at', { fsp: 3 }),
+	},
+	(t) => [uniqueIndex('call_alerts_donor_uq').on(t.callId, t.userId), index('call_alerts_user_idx').on(t.userId, t.sentAt)],
 )

@@ -20,7 +20,7 @@ import { requestDecisionMessage } from '../lib/messages'
 import { checkNeededBy, detailView } from '../lib/requests'
 import { parseInput, readJson } from '../lib/validate'
 import { requireAuth, type AuthEnv } from '../middleware/auth'
-import { publishCall, publishPreview } from './facility-calls'
+import { alertPreview, publishCall, publishPreview } from './facility-calls'
 
 /** Mounted at /api/my-facilities/:id/requests. Only people on the facility's team get in; everyone else sees "not found". */
 export const facilityRequestRoutes = new Hono<AppEnv>()
@@ -147,6 +147,7 @@ async function review(c: Context<AuthEnv>, action: Extract<RequestAction, 'confi
 
 facilityRequestRoutes.get('/:rid/publish-preview', requireAuth, publishPreview)
 facilityRequestRoutes.post('/:rid/publish', requireAuth, publishCall)
+facilityRequestRoutes.post('/:rid/alert-preview', requireAuth, alertPreview)
 facilityRequestRoutes.post('/:rid/confirm', requireAuth, async (c: Context<AuthEnv>) => {
 	const i = parseInput(confirmInput, await readJson(c))
 	return review(c, 'confirm', { approver: false, changes: { bloodType: i.bloodType, units: i.units, urgency: i.urgency } })

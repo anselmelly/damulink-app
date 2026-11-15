@@ -1,5 +1,5 @@
 import { and, eq } from 'drizzle-orm'
-import { addMember, addRequestEvent, bloodRequests, callResponses, calls, insertCall, countSentSince, createUser, facilities, findUserByEmail, insertRequest, loadDotEnv, makeDb, requestEvents } from '@damu/db'
+import { updateUser, addMember, addRequestEvent, bloodRequests, callResponses, calls, insertCall, countSentSince, createUser, facilities, findUserByEmail, insertRequest, loadDotEnv, makeDb, requestEvents } from '@damu/db'
 import { formatRequestNumber, newFacilityCode, patientKey } from '@damu/shared-types'
 import { newId } from './lib/id'
 import { hashPassword } from './lib/password'
@@ -85,6 +85,8 @@ if (hasCalls) {
 		await person('donor2@seed.example', 'Faith Chebet', '+254712000012'),
 		await person('donor3@seed.example', 'Hassan Ali', '+254712000013'),
 	]
+	// alert-ready: a recorded blood type, this facility as home, SMS on, so a call with SMS reaches them
+	for (const d of donors) await updateUser(db, d.id, { bloodType: 'O+', weightKg: 70, homeFacilityId: facility.id, smsOptIn: true })
 	const pub = await reqOf('Ward 1, bed 6')
 	const done = await reqOf('Ward 5, bed 2')
 	if (pub && done) {

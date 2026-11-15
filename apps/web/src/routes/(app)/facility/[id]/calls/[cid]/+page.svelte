@@ -10,7 +10,7 @@
 	import BloodChip from '$lib/ui/BloodChip.svelte'
 	import FacilityShell from '$lib/ui/FacilityShell.svelte'
 	import Icon from '$lib/ui/Icon.svelte'
-	import { compatibleTypes, type CallDetail, type MyFacilityView } from '@damu/shared-types'
+	import { compatibleTypes, type CallDetail, type MyFacilityView, type RingStat } from '@damu/shared-types'
 
 	const id = $derived(page.params.id)
 	const cid = $derived(page.params.cid)
@@ -20,7 +20,8 @@
 	let busy = $state(false)
 	let error = $state('')
 	let errors = $state<Record<string, string>>({})
-	let dialog = $state<'schedule' | 'extend' | 'close' | 'edit' | null>(null)
+	let dialog = $state<'schedule' | 'extend' | 'close' | 'edit' | 'more' | null>(null)
+	let rings = $state<{ rings: RingStat[]; nextRing: number | null } | null>(null)
 	let target = $state('') // the donor answer being scheduled
 	let date = $state('')
 	let time = $state('09:00')
@@ -32,7 +33,10 @@
 	const published = page.url.searchParams.get('published') === '1'
 
 	const base = $derived(`/my-facilities/${id}/calls/${cid}`)
-	const load = async () => (d = await auth.call<CallDetail>(base))
+	const load = async () => {
+		d = await auth.call<CallDetail>(base)
+		rings = d.smsEnabled ? await auth.call<{ rings: RingStat[]; nextRing: number | null }>(`${base}/rings`).catch(() => null) : null
+	}
 	onMount(async () => {
 		try {
 			f = await auth.call<MyFacilityView>(`/my-facilities/${id}`)
@@ -114,6 +118,13 @@
 			{/if}
 		</section>
 
+		{#if rings}
+			<section class="card flex flex-col gap-3 p-6 md:p-8" aria-label="Alerts sent">
+				<h2 class="text-lg font-bold">Alerts sent</h2>
+				<ul class="flex flex-col gap-1 text-[15px]">{#each rings.rings as r}<li class="flex flex-wrap justify-between gap-x-4"><span>Ring {r.ring}</span><span class="text-muted">{r.alerted} alerted · {r.replied} replied · {r.toAlert} still to alert</span></li>{/each}</ul>
+			</section>
+		{/if}
+
 		<section class="card flex flex-col gap-4 p-6 md:p-8">
 			<h2 class="text-lg font-bold">Donors who said YES</h2>
 			{#if !d.responses.length}
@@ -138,6 +149,7 @@
 		{#if d.status === 'live'}
 			<section class="flex flex-col gap-3 sm:flex-row">
 				<button type="button" onclick={() => open('edit')} class="btn-secondary sm:!w-auto sm:px-6">Edit text and types</button>
+				{#if d.smsEnabled && rings?.nextRing}<button type="button" onclick={() => open('more')} class="btn-secondary sm:!w-auto sm:px-6">Alert more donors</button>{/if}
 				<button type="button" onclick={() => open('extend')} disabled={!d.canExtendDays} class="btn-secondary sm:!w-auto sm:px-6">Extend</button>
 				<button type="button" onclick={() => open('close')} class="btn-danger sm:!w-auto sm:px-6">Close call</button>
 			</section>
@@ -152,6 +164,10 @@
 						<div class="grid gap-3 sm:grid-cols-2"><div class="flex flex-col gap-2"><label for="sd" class="field-label">Date</label><input id="sd" type="date" min={todayNairobi()} bind:value={date} class="field-input" /></div><div class="flex flex-col gap-2"><label for="st" class="field-label">Time</label><input id="st" type="time" bind:value={time} class="field-input" /></div></div>
 						{#if errors.scheduledAt}<span class="field-error">{errors.scheduledAt}</span>{/if}
 						<div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end"><button type="button" onclick={() => (dialog = null)} class="btn-secondary sm:!w-auto sm:px-6">Cancel</button><button type="button" disabled={busy || !date} onclick={() => act(`/responses/${target}/schedule`, { scheduledAt: toIso(date, time) })} class="btn-primary sm:!w-auto sm:px-6">Schedule</button></div>
+					{:else if dialog === 'more' && rings}
+						<h2 class="text-xl font-bold">Alert the next ring?</h2>
+						<p class="text-[15px] text-muted">Ring {rings.nextRing} has {rings.rings.find((r) => r.ring === rings!.nextRing)?.toAlert ?? 0} donors who match. They get the SMS now, not at the scheduled time.</p>
+						<div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end"><button type="button" onclick={() => (dialog = null)} class="btn-secondary sm:!w-auto sm:px-6">Not now</button><button type="button" disabled={busy} onclick={() => act('/alert-more')} class="btn-primary sm:!w-auto sm:px-6">Alert ring {rings.nextRing}</button></div>
 					{:else if dialog === 'extend'}
 						<h2 class="text-xl font-bold">Extend this call</h2>
 						<p class="text-[15px] text-muted">A call can stay open for 7 days in all. You can add up to {d.canExtendDays} more.</p>

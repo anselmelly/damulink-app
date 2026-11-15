@@ -8,7 +8,7 @@
 	import { URGENCY_CARDS } from '$lib/calls'
 	import FacilityShell from '$lib/ui/FacilityShell.svelte'
 	import Icon from '$lib/ui/Icon.svelte'
-	import type { MyFacilityView, PublishPreview } from '@damu/shared-types'
+	import type { AlertPreview, MyFacilityView, PublishPreview } from '@damu/shared-types'
 
 	const id = $derived(page.params.id)
 	const rid = $derived(page.params.rid)
@@ -19,6 +19,8 @@
 	let urgency = $state('normal')
 	let text = $state('')
 	let isPublic = $state(true)
+	let sms = $state(true)
+	let who = $state<AlertPreview | null>(null)
 	let busy = $state(false)
 	let error = $state('')
 	let errors = $state<Record<string, string>>({})
@@ -34,6 +36,15 @@
 			missing = e instanceof ApiError && e.code === 'invalid_move' ? 'Only an approved request can be published.' : 'Request not found.'
 		}
 	})
+	// who would be alerted, refreshed when the types or the urgency change
+	$effect(() => {
+		const body = { types: [...types], urgency }
+		if (!p || !sms || !body.types.length) return void (who = null)
+		let stale = false
+		auth.call<AlertPreview>(`/my-facilities/${id}/requests/${rid}/alert-preview`, { body }).then((r) => !stale && (who = r)).catch(() => !stale && (who = null))
+		return () => (stale = true)
+	})
+	const RING_NAMES = ['Your own donors', 'Nearby, about 10 km', 'Wider, about 25 km or the same county']
 	const toggle = (t: string) => (types = types.includes(t) ? types.filter((x) => x !== t) : [...types, t])
 
 	async function publish(e: SubmitEvent) {
@@ -42,7 +53,7 @@
 		errors = {}
 		busy = true
 		try {
-			const c = await auth.call<{ id: string }>(`/my-facilities/${id}/requests/${rid}/publish`, { body: { types, urgency, publicText: text, isPublic, smsEnabled: false } })
+			const c = await auth.call<{ id: string }>(`/my-facilities/${id}/requests/${rid}/publish`, { body: { types, urgency, publicText: text, isPublic, smsEnabled: sms } })
 			await goto(`/facility/${id}/calls/${c.id}?published=1`)
 		} catch (err) {
 			if (err instanceof ApiError) {
@@ -87,7 +98,7 @@
 						<label><input type="radio" name="urg" value={v} bind:group={urgency} class="peer sr-only" /><span class="block cursor-pointer rounded-xl border-[1.5px] border-field bg-white p-4 peer-checked:border-rose-600 peer-checked:bg-rose-50 peer-focus-visible:ring-4 peer-focus-visible:ring-pink-300"><span class="block font-bold">{l}</span><span class="mt-1 block text-[14px] leading-5 text-muted">{d}</span></span></label>
 					{/each}
 				</div>
-				<p class="text-[14px] text-muted">Alerts to donors by SMS arrive in the next update. Urgency is saved with the call.</p>
+				<p class="text-[14px] text-muted">Normal: donors who set quiet hours or a weekly limit are respected. Urgent and surge skip those two.</p>
 			</section>
 
 			<section class="card flex flex-col gap-3 p-6 md:p-8">
@@ -97,8 +108,19 @@
 				<div class="flex justify-between text-[14px]"><span>{#if errors.publicText}<span class="field-error"><Icon name="alert" class="h-4 w-4" />{errors.publicText}</span>{/if}</span><span class="text-muted">{text.length}/{p.textMax}</span></div>
 				<label class="mt-1 flex cursor-pointer items-center gap-3 text-[15px] font-semibold"><input type="checkbox" bind:checked={isPublic} class="peer sr-only" /><span class="switch"></span>Public call (listed on the calls page, with a share link)</label>
 				{#if errors.isPublic}<span class="field-error"><Icon name="alert" class="h-4 w-4" />{errors.isPublic}</span>{/if}
-				<label class="flex items-center gap-3 text-[15px] font-semibold text-muted"><input type="checkbox" disabled class="peer sr-only" /><span class="switch opacity-60"></span>SMS alerts to matching donors (next update)</label>
+				<label class="flex cursor-pointer items-center gap-3 text-[15px] font-semibold"><input type="checkbox" bind:checked={sms} class="peer sr-only" /><span class="switch"></span>SMS alerts to matching donors</label>
 			</section>
+
+			{#if sms}
+				<section class="card flex flex-col gap-3 p-6 md:p-8" aria-label="Who would be alerted">
+					<h2 class="text-lg font-bold">Who would be alerted</h2>
+					{#if who}
+						<ul class="flex flex-col gap-2 text-[15px]">{#each who.rings as r}<li class="flex justify-between gap-4"><span>Ring {r.ring}: {RING_NAMES[r.ring - 1]}</span><b>{r.count}</b></li>{/each}<li class="flex justify-between gap-4 border-t border-rose-100 pt-2"><span class="font-bold">In total</span><b>{who.total}</b></li></ul>
+						<p class="text-[14px] text-muted">{urgency === 'surge' ? 'All rings are alerted at once.' : `Ring 1 goes now. The next ring follows every ${urgency === 'urgent' ? '2' : '12'} hours.`} Donors can also reply YES or STOP.</p>
+						<div class="rounded-xl bg-rose-50 p-4 text-[14px] leading-5"><p class="font-semibold">SMS preview <span class="font-normal text-muted">({who.length} characters)</span></p><p class="mt-1">{who.text}</p></div>
+					{:else}<p class="text-[15px] text-muted" role="status">Counting…</p>{/if}
+				</section>
+			{/if}
 
 			<div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
 				<a href="/facility/{id}/requests/{rid}" class="btn-secondary sm:!w-auto sm:px-8">Back</a>

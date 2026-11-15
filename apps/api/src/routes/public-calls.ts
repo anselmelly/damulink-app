@@ -26,7 +26,7 @@ publicCallRoutes.use('*', async (c, next) => {
 	const now = clock.now()
 	const ip = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
 	if ((await hit(db, `public-calls:${ip}`, 60_000, now)) > 60) throw new ApiError(429, 'too_many_requests', 'Too many requests. Try again in a minute.')
-	await expireCalls(db, now)
+	await expireCalls(db, now, c.var.sms)
 	await next()
 })
 

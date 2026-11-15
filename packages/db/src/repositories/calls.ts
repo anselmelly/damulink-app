@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, inArray, max, sql } from 'drizzle-orm'
+import { and, asc, count, desc, eq, inArray, max, or, sql } from 'drizzle-orm'
 import type { Db } from '../client'
 import { callResponses, calls, facilities, users } from '../schema'
 
@@ -41,6 +41,17 @@ export async function moveCall(db: Db, id: string, from: readonly Call['status']
 	return res.affectedRows === 1
 }
 
+/** Adds the donor's answer to the call. False when they already answered. */
+export async function addResponse(db: Db, row: typeof callResponses.$inferInsert): Promise<boolean> {
+	try {
+		await db.insert(callResponses).values(row)
+		return true
+	} catch (e) {
+		if (dup(e)) return false
+		throw e
+	}
+}
+
 export async function dueCalls(db: Db, now: Date): Promise<Call[]> {
 	return db.select().from(calls).where(and(eq(calls.status, 'live'), sql`${calls.closesAt} <= ${now}`))
 }
@@ -79,6 +90,10 @@ export async function listResponses(db: Db, callId: string) {
 		.where(eq(callResponses.callId, callId))
 		.orderBy(asc(callResponses.repliedAt), asc(callResponses.id))
 }
+export async function findResponse(db: Db, callId: string, userId: string): Promise<CallResponse | undefined> {
+	const [r] = await db.select().from(callResponses).where(and(eq(callResponses.callId, callId), eq(callResponses.userId, userId))).limit(1)
+	return r
+}
 export async function getResponse(db: Db, callId: string, id: string): Promise<CallResponse | undefined> {
 	const [r] = await db.select().from(callResponses).where(and(eq(callResponses.id, id), eq(callResponses.callId, callId))).limit(1)
 	return r
@@ -116,7 +131,7 @@ export async function getPublicCall(db: Db, key: { number?: number | null; short
 		.select({ c: calls, facilityName: facilities.name, town: facilities.town, county: facilities.county })
 		.from(calls)
 		.innerJoin(facilities, eq(facilities.id, calls.facilityId))
-		.where(and(match, eq(calls.isPublic, true), inArray(calls.status, ['live', 'closed', 'expired'])))
+		.where(and(match, or(eq(calls.isPublic, true), eq(calls.smsEnabled, true)), inArray(calls.status, ['live', 'closed', 'expired'])))
 		.limit(1)
 	return r
 }
