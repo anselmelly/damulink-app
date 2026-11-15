@@ -17,9 +17,9 @@
 		return t === 'Yesterday' || t.endsWith('ago') ? t : `${t} ago`
 	}
 	const steps = [
-		{ icon: 'building', title: 'A verified medical facility raises a call', text: 'Families can ask on a patient’s behalf. The facility confirms the admission and the blood type before anything is shared.' },
-		{ icon: 'message', title: 'Matching donors get an SMS', text: 'Only donors who opted in, whose blood type fits and who are likely eligible today, starting from the facility’s own donors.' },
-		{ icon: 'calendar', title: 'You reply YES, the facility schedules you', text: 'Your number goes to the facility only after you say YES. Their screening on the day has the final say.' },
+		{ icon: 'building', title: 'A hospital asks for blood', text: 'A verified medical facility confirms the patient and the blood type, then raises a call. Families can ask on a patient’s behalf, but only the facility publishes.' },
+		{ icon: 'message', title: 'The right donors get a text', text: 'We message donors who opted in and match the blood type, starting with those closest to that hospital. The text never mentions the patient.' },
+		{ icon: 'calendar', title: 'You say YES, they schedule you', text: 'Reply YES, or tap it in your account. The hospital gets your number only then, books a time, and screens you on the day.' },
 	]
 	const trust = [
 		{ icon: 'shield', title: 'Facilities are checked by hand', text: 'A reviewer verifies every medical facility before it can post a call or alert a donor.' },
@@ -74,7 +74,8 @@
 	<section id="how" class="scroll-mt-20 bg-white py-16 md:py-24">
 		<div class="mx-auto max-w-6xl px-6">
 			<p class="eyebrow">How it works</p>
-			<h2 class="mt-2 max-w-2xl text-[30px] font-extrabold leading-9 tracking-tight md:text-[40px] md:leading-[46px]">From a patient's bed to a donor on the way</h2>
+			<h2 class="mt-2 max-w-2xl text-[30px] font-extrabold leading-9 tracking-tight md:text-[40px] md:leading-[46px]">From a hospital bed to a donor on the way</h2>
+			<p class="mt-3 max-w-2xl text-base leading-6 text-muted">A call for blood takes minutes, not a night of phone calls.</p>
 			<ol class="mt-10 grid gap-5 md:grid-cols-3">
 				{#each steps as s}
 					<li class="card flex flex-col gap-4 p-6">
@@ -84,6 +85,7 @@
 					</li>
 				{/each}
 			</ol>
+			<p class="mt-6 text-[15px] text-muted">The facility’s screening on the day has the final say on every donation.</p>
 		</div>
 	</section>
 
