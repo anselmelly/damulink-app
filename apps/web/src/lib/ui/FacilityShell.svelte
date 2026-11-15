@@ -14,15 +14,15 @@
 	// The attendant tools (requests, calls, check-in...) arrive in later phases; they show as disabled until then.
 	const items = $derived(
 		[
-			{ key: 'home', label: 'Home', icon: 'home' },
-			{ key: 'status', label: 'Facility status', href: f ? `/facility/${f.id}` : undefined, icon: 'shield' },
+			{ key: 'home', label: 'Home', href: f?.status === 'verified' ? `/facility/${f.id}/home` : undefined, icon: 'home' },
+			{ key: 'status', label: 'Facility status', href: f ? `/facility/${f.id}?status=1` : undefined, icon: 'shield' },
 			{ key: 'requests', label: 'Requests', href: f ? `/facility/${f.id}/requests` : undefined, icon: 'clipboard' },
 			{ key: 'calls', label: 'Calls', href: f ? `/facility/${f.id}/calls` : undefined, icon: 'bell' },
 			{ key: 'donor-requests', label: 'Donor requests', href: f ? `/facility/${f.id}/donor-requests` : undefined, icon: 'user' },
 			{ key: 'checkin', label: 'Check-in', href: f ? `/facility/${f.id}/checkin` : undefined, icon: 'check' },
 			{ key: 'lab-results', label: 'Lab results', href: f ? `/facility/${f.id}/lab-results` : undefined, icon: 'drop' },
 			{ key: 'drives', label: 'Blood drives', icon: 'calendar' },
-			{ key: 'donors', label: 'Donors', icon: 'heart', admin: true },
+			{ key: 'donors', label: 'Donors', href: f ? `/facility/${f.id}/donors` : undefined, icon: 'heart', admin: true },
 			{ key: 'attendants', label: 'Attendants', href: f ? `/facility/${f.id}/attendants` : undefined, icon: 'user', admin: true },
 			{ key: 'profile', label: 'Facility profile', href: f ? `/facility/${f.id}/profile` : undefined, icon: 'building', admin: true },
 		].filter((i) => !i.admin || isAdmin) as { key: string; label: string; href?: string; icon: string }[],

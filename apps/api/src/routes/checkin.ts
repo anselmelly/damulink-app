@@ -167,7 +167,8 @@ checkinRoutes.post('/checkin/:code/outcome', requireAuth, async (c: Context<Auth
 	} else if (input.outcome === 'test') {
 		if (u.bloodType && input.bloodType !== 'later' && input.bloodType !== u.bloodType) throw new ApiError(409, 'type_conflict', 'This donor already has a different blood type on record.')
 		await insertVisit(db, visit)
-		await recordDonorFacts(db, u.id, { weightKg: input.weightKg, bloodType: input.bloodType === 'later' || u.bloodType ? undefined : input.bloodType })
+		const setType = input.bloodType !== 'later' && !u.bloodType
+		await recordDonorFacts(db, u.id, { weightKg: input.weightKg, bloodType: setType && input.bloodType !== 'later' ? input.bloodType : undefined, ...(setType ? { bloodTypeFacilityId: f.id, bloodTypeAt: now } : {}) })
 		if (input.bloodType !== 'later') {
 			if (!u.bloodType) {
 				await textVerified(db, sms, u, input.bloodType)
@@ -209,7 +210,7 @@ checkinRoutes.post('/lab-samples/:sid/result', requireAuth, async (c: Context<Au
 	const now = clock.now()
 	if (!(await closeSample(db, sample.id, user.id, now))) throw new ApiError(409, 'already_done', 'This result was already entered.')
 	if (!u.bloodType) {
-		await recordDonorFacts(db, u.id, { bloodType })
+		await recordDonorFacts(db, u.id, { bloodType, bloodTypeFacilityId: f.id, bloodTypeAt: now })
 		await textVerified(db, sms, u, bloodType)
 	}
 	await writeAudit(db, { actorId: user.id, action: 'lab.result', target: u.id, detail: f.id }, now)

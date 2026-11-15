@@ -180,6 +180,7 @@
 			<div class="flex flex-col gap-3 sm:flex-row">
 				<button class="btn-primary sm:w-auto sm:px-8" disabled={busy || (tab === 'test' && testType === 'now' && !bloodType)}>{busy ? 'Saving…' : tab === 'donated' ? 'Record donation' : tab === 'test' ? 'Record test' : tab === 'deferred' ? 'Record deferral' : 'Mark as did not attend'}</button>
 				<button type="button" class="btn-secondary sm:w-auto sm:px-8" onclick={reset}>Cancel</button>
+				<a class="link self-center" href="/facility/{id}/records/{encodeURIComponent(card.code)}">Correct a record</a>
 			</div>
 		</form>
 	{:else}

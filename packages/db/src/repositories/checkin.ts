@@ -85,7 +85,7 @@ export async function heldUntil(db: Db, userId: string, today: string): Promise<
 }
 
 /** Facts only a facility records. Weight is left alone when none is given. */
-export async function recordDonorFacts(db: Db, userId: string, f: { lastDonationOn?: string; weightKg?: number | null; bloodType?: (typeof users.$inferInsert)['bloodType'] }): Promise<void> {
+export async function recordDonorFacts(db: Db, userId: string, f: { lastDonationOn?: string; weightKg?: number | null; bloodType?: (typeof users.$inferInsert)['bloodType']; bloodTypeFacilityId?: string; bloodTypeAt?: Date }): Promise<void> {
 	const set = Object.fromEntries(Object.entries(f).filter(([, v]) => v !== undefined && v !== null))
 	if (Object.keys(set).length) await db.update(users).set(set).where(eq(users.id, userId))
 }

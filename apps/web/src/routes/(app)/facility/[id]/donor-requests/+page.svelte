@@ -12,7 +12,7 @@
 
 	const id = $derived(page.params.id)
 	let f = $state<MyFacilityView | null>(null)
-	let tab = $state<RequestTab>('follow_up')
+	let tab = $state<RequestTab>(['scheduled', 'past'].includes(page.url.searchParams.get('tab') ?? '') ? (page.url.searchParams.get('tab') as RequestTab) : 'follow_up')
 	let data = $state<DonorRequestList | null>(null)
 	let loaded = $state(false)
 	let dialog = $state<{ kind: 'date' | 'decline' | 'cancel'; item: DonorRequestItem } | null>(null)

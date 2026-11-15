@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
+	import { goto } from '$app/navigation'
 	import { page } from '$app/state'
 	import { auth } from '$lib/auth.svelte'
 	import { ApiError } from '$lib/api'
@@ -21,6 +22,8 @@
 	async function load() {
 		try {
 			f = await auth.call<MyFacilityView>(`/my-facilities/${id}`)
+			// a verified facility lands on Home; the nav's "Facility status" link adds ?status=1 to stay here
+			if (f.status === 'verified' && !justSubmitted && page.url.searchParams.get('status') !== '1') return void goto(`/facility/${id}/home`, { replaceState: true })
 		} catch {
 			missing = true
 		}

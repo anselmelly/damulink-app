@@ -33,3 +33,5 @@ export async function appt(t: TestApp, userId: string, facilityId: string, over:
 	return id
 }
 export const dr = (facilityId: string, rest = '') => `/api/my-facilities/${facilityId}/donor-requests${rest}`
+
+export const rec = (facilityId: string, code: string, rest = '') => `/api/my-facilities/${facilityId}/records/${encodeURIComponent(code)}${rest}`

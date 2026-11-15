@@ -75,6 +75,9 @@ export const users = mysqlTable(
 		bloodType: mysqlEnum('blood_type', ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+']),
 		weightKg: decimal('weight_kg', { precision: 4, scale: 1, mode: 'number' }),
 		lastDonationOn: date('last_donation_on', { mode: 'string' }),
+		// which facility recorded the blood type, and when: only that facility may correct it
+		bloodTypeFacilityId: varchar('blood_type_facility_id', { length: 26 }),
+		bloodTypeAt: datetime('blood_type_at', { fsp: 3 }),
 		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
 		lastLoginAt: datetime('last_login_at', { fsp: 3 }),
 	},
@@ -434,4 +437,23 @@ export const walkinVisits = mysqlTable(
 		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
 	},
 	(t) => [index('walkin_visits_facility_idx').on(t.facilityId, t.createdAt)],
+)
+
+// ---------- phase 5b part B: corrections ----------
+/** Every correction of a record a facility made: old and new values are health data, so only that facility's team ever sees this. */
+export const recordCorrections = mysqlTable(
+	'record_corrections',
+	{
+		id: varchar('id', { length: 26 }).primaryKey(),
+		userId: varchar('user_id', { length: 26 }).notNull(),
+		facilityId: varchar('facility_id', { length: 26 }).notNull(),
+		field: mysqlEnum('field', ['blood_type', 'weight', 'last_donation']).notNull(),
+		oldValue: varchar('old_value', { length: 20 }),
+		newValue: varchar('new_value', { length: 20 }).notNull(),
+		reason: mysqlEnum('reason', ['lab_differed', 'typo', 'wrong_donor', 'reweighed', 'other']).notNull(),
+		note: varchar('note', { length: 200 }),
+		correctedBy: varchar('corrected_by', { length: 26 }).notNull(),
+		createdAt: datetime('created_at', { fsp: 3 }).notNull(),
+	},
+	(t) => [index('record_corrections_donor_idx').on(t.facilityId, t.userId, t.createdAt)],
 )

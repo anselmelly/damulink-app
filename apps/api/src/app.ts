@@ -13,6 +13,8 @@ import { cronRoutes } from './routes/cron'
 import { smsRoutes } from './routes/sms'
 import { checkinRoutes } from './routes/checkin'
 import { donorRequestRoutes } from './routes/donor-requests'
+import { recordRoutes } from './routes/records'
+import { facilityHomeRoutes } from './routes/facility-home'
 import { facilityCallRoutes } from './routes/facility-calls'
 import { publicCallRoutes } from './routes/public-calls'
 import { facilityRequestRoutes } from './routes/facility-requests'
@@ -64,6 +66,8 @@ export function createApp(deps: AppDeps) {
 	app.route('/api/sms', smsRoutes)
 	app.route('/api/cron', cronRoutes)
 	app.route('/api/my-facilities/:id/donor-requests', donorRequestRoutes)
+	app.route('/api/my-facilities/:id/records', recordRoutes)
+	app.route('/api/my-facilities/:id', facilityHomeRoutes)
 	app.route('/api/my-facilities/:id', checkinRoutes)
 	app.route('/api/my-facilities', myFacilityRoutes)
 	app.route('/api/admin', adminRoutes)
