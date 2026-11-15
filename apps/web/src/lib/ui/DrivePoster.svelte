@@ -13,7 +13,7 @@
 </script>
 
 <div class="relative overflow-hidden rounded-3xl bg-rose-600 p-6 text-white shadow-lg">
-	<svg aria-hidden="true" viewBox="0 0 24 24" fill="#fff" class="pointer-events-none absolute -bottom-10 -right-6 h-[280px] w-[230px] opacity-10"><path d="M12 2.6c-3.9 4.7-6.4 8.2-6.4 11.3a6.4 6.4 0 0 0 12.8 0c0-3.1-2.5-6.6-6.4-11.3z" /></svg>
+	<svg aria-hidden="true" viewBox="0 0 24 24" fill="#fff" class="pointer-events-none absolute -right-12 top-16 h-[330px] w-[270px] opacity-[.16]"><path d="M12 2.6c-3.9 4.7-6.4 8.2-6.4 11.3a6.4 6.4 0 0 0 12.8 0c0-3.1-2.5-6.6-6.4-11.3z" /></svg>
 	<p class="relative text-[26px] font-extrabold tracking-tight">{BRAND.name}</p>
 	<p class="relative text-[13px] font-extrabold uppercase tracking-[.25em]">Blood drive</p>
 	<p class="relative mt-3 flex items-baseline gap-3"><span class="text-[72px] font-extrabold leading-none">{date ? dayOf(date) : '–'}</span><span class="text-[28px] font-extrabold">{date ? monthOf(date) : ''}</span></p>
