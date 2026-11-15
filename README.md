@@ -26,6 +26,6 @@ Create a local database and a user that may also create `damulink_test_*` databa
 
 Built: accounts and sign-in, the donor account (donate or get tested, appointments, alerts, reminders, profile, calls for you), facilities (registration, review, team, invites, check-in, lab results, walk-ins, records), blood requests and calls with SMS alerts in rings, blood drives (share card, interest list, day tracker, summary and CSV), and the super admin area (verification queue, facilities, settings, super admins, audit log, misuse flags, dashboard).
 
-Mail and SMS are stand-ins in development (the server prints them; nothing is sent) until a provider is connected. Deploying: see `deploy/README.md`. Demo data for a server: `seed:demo` in `apps/api` (tagged so it never touches real records).
+Mail and SMS are stand-ins in development (the server prints them; nothing is sent) until a provider is connected. API reference: `docs/api.md`. Deploying: see `deploy/README.md`. Demo data for a server: `seed:demo` in `apps/api` (tagged so it never touches real records).
 
 Not built yet: withdrawing a yes from the app, the email alert channel, the facility-requests list for super admins, phone-width polish.
