@@ -60,10 +60,16 @@
 
 <div class="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-rose-100 bg-white px-4 md:hidden">
 	<a href="/admin/dashboard" class="text-rose-600"><Logo class="h-8" /></a>
-	<nav class="flex items-center gap-1 text-sm font-semibold"><a href="/admin/dashboard" class="rounded-lg px-2 py-2 {active === 'dashboard' ? 'text-red-700' : 'text-ink'}">Home</a><a href="/admin/queue" class="rounded-lg px-2 py-2 {active === 'queue' ? 'text-red-700' : 'text-ink'}">Queue</a><a href="/admin/facilities" class="rounded-lg px-2 py-2 {active === 'facilities' ? 'text-red-700' : 'text-ink'}">Facilities</a><a href="/admin/misuse" class="rounded-lg px-2 py-2 {active === 'misuse' ? 'text-red-700' : 'text-ink'}">Misuse</a><a href="/admin/settings" class="rounded-lg px-2 py-2 {active === 'settings' ? 'text-red-700' : 'text-ink'}">Settings</a><a href="/dashboard" class="rounded-lg px-2 py-2 text-ink">Donor</a></nav>
+	<a href="/dashboard" class="text-sm font-semibold text-ink">My account</a>
 </div>
 
-<main class="min-h-screen bg-rose-50 md:pl-64">
+<nav aria-label="Admin" class="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-rose-100 bg-white md:hidden">
+	{#each [['dashboard', 'Home', '/admin/dashboard', 'home'], ['queue', 'Queue', '/admin/queue', 'clipboard'], ['facilities', 'Facilities', '/admin/facilities', 'building'], ['settings', 'Settings', '/admin/settings', 'sliders'], ['admins', 'Admins', '/admin/admins', 'users']] as [k, l, h, ic]}
+		<a href={h} class="flex h-16 flex-col items-center justify-center gap-1 text-xs font-semibold {active === k ? 'text-rose-600' : 'text-muted'}"><Icon name={ic} class="h-6 w-6" />{l}</a>
+	{/each}
+</nav>
+
+<main class="min-h-screen bg-rose-50 pb-24 md:pb-0 md:pl-64">
 	<div class="mx-auto flex w-full max-w-6xl flex-col gap-6 px-5 py-8 md:px-8 md:py-12">
 		{#if user.isSuperAdmin}
 			{@render children()}

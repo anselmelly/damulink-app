@@ -12,7 +12,7 @@ export async function auditItems(db: Db, rows: Row[]): Promise<AuditItem[]> {
 	const names = await facilityNames(db, facilityIds)
 	return rows.map(({ a, actor }) => {
 		const who = a.actorId ? (homes.get(a.actorId) ? `${actor ?? 'Someone'} (${homes.get(a.actorId)})` : (actor ?? 'Someone')) : 'System'
-		let detail = (a.detail ?? '').replace(ID, (id) => names.get(id) ?? '').replace(/\s+/g, ' ').trim()
+		let detail = (a.detail ?? '').replace(ID, (id) => names.get(id) ?? '').replace(/\b(public|sms)=\w+/g, '').replace(/\s+/g, ' ').trim()
 		if (/^[[{]|\[object/.test(detail)) detail = '' // old rows that logged raw JSON
 		if (a.action === 'setting.change') detail = `${SETTING_FIELDS.find((f) => f.key === a.target)?.label ?? a.target ?? ''}: ${a.detail ?? ''}`
 		else if (a.action.startsWith('facility_') && a.target) detail = [names.get(a.target), a.detail].filter(Boolean).join(', ')
