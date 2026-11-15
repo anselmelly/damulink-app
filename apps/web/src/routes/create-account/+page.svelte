@@ -114,7 +114,6 @@
 	brandTitle="One account. Give, ask, or run a facility."
 	brandText="Join as a donor so medical facilities can reach you, request blood for someone you know, or add your facility for verification."
 	brandPoints={['Your phone number is never shown publicly', 'You choose when to get alerts, and can stop any time', 'Medical facilities confirm your blood type, never you alone']}
-	panelNote="Signing up as a donor."
 	inner="max-w-[520px]"
 >
 	<div class="flex flex-col gap-6">

@@ -67,7 +67,6 @@
 	brandTitle="Join your facility's team."
 	brandText="You were invited to work on a facility's requests, calls, and donations. No donor details are needed."
 	brandPoints={['Your email is already confirmed by the invite', 'Your actions are recorded under your own name', 'Sign in with your facility code to open the facility']}
-	panelNote="Joining a facility team."
 	inner="max-w-[460px]"
 >
 	{#if invalid || !token}

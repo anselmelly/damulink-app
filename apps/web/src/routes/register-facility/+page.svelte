@@ -69,7 +69,6 @@
 	brandTitle={`Bring your facility onto ${BRAND.name}.`}
 	brandText={`Register your facility, health centre, or blood bank. A ${BRAND.name} reviewer checks it by hand before it can post calls or alert donors.`}
 	brandPoints={['Only verified facilities can publish calls', 'You are the facility admin and add your own team', 'Donors join by choice, you never register them']}
-	panelNote="Registering a facility."
 	inner="max-w-[560px]"
 >
 	<div class="flex flex-col gap-6">
