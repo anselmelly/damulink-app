@@ -52,6 +52,19 @@ ls -t /srv/damulink/releases                       # releases, newest first
 ls -t /srv/damulink/shared/backups                 # database copies, one before every deploy
 ```
 
+## Demo data (optional, run by hand)
+
+`api/seed-demo.mjs` adds invented facilities, a team at each, 14 donors, and at Rift County Hospital some requests, a live call and two drives.
+It only **adds what is missing**: it never updates a row, skips any facility whose name already exists, and every demo account uses `@demo.example`.
+On the server, from `/srv/damulink/current`:
+
+```bash
+set -a; . /srv/damulink/shared/api.env; set +a
+node api/seed-demo.mjs /srv/damulink/shared/demo-accounts.txt   # writes the logins (mode 600); the password is never printed
+```
+
+Sign in with a demo email, the password in that file, and the facility code. Running it again changes nothing.
+
 ## Rolling back by hand
 
 ```bash

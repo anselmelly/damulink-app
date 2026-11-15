@@ -2,6 +2,7 @@
 # Builds one self-contained release on THIS machine (never on the small server) and packs it as dist-release/damulink-<stamp>.tar.gz
 #
 #   api/server.mjs   the API, everything bundled (runs with plain `node`)
+#   api/seed-demo.mjs  adds demo data, only what is missing (run by hand, never by a deploy)
 #   api/migrate.mjs  applies the SQL migrations (MIGRATIONS_DIR points at ./migrations)
 #   migrations/      the SQL files
 #   web/build/       the SvelteKit server (adapter-node), everything bundled
@@ -22,6 +23,7 @@ echo "==> bundling the API"
 BUNDLE=(--bundle --platform=node --format=esm --target=node24 --minify-syntax --legal-comments=none
   --banner:js="import { createRequire as __cr } from 'node:module'; const require = __cr(import.meta.url);")
 pnpm exec esbuild apps/api/src/server.ts "${BUNDLE[@]}" --outfile="$OUT/api/server.mjs" --log-level=warning
+pnpm exec esbuild apps/api/src/seed-demo.ts "${BUNDLE[@]}" --outfile="$OUT/api/seed-demo.mjs" --log-level=warning
 pnpm exec esbuild packages/db/src/migrate.ts "${BUNDLE[@]}" --outfile="$OUT/api/migrate.mjs" --log-level=warning
 cp -r packages/db/migrations "$OUT/migrations"
 

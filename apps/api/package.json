@@ -7,6 +7,7 @@
 		"dev": "node --watch --import tsx src/server.ts",
 		"check": "tsc --noEmit",
 		"test": "vitest run",
+		"seed:demo": "node --import tsx src/seed-demo.ts",
 		"seed:requests": "node --import tsx src/seed-requests.ts",
 		"sms:reply": "node --import tsx src/dev-sms-reply.ts"
 	},
