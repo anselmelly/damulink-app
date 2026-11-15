@@ -163,13 +163,13 @@
 
 		<section class="card flex flex-col gap-3 p-6">
 			<h2 class="text-lg font-bold">Alerts</h2>
-			<p class="text-sm leading-5 text-muted">{verified && e.status === 'eligible' ? 'You are set to receive alerts when your blood type is needed near you. Alert settings arrive soon.' : 'You will start receiving alerts once you are verified and eligible. Alert settings arrive soon.'}</p>
+			<p class="text-sm leading-5 text-muted">{verified && e.status === 'eligible' ? 'You are set to receive alerts when your blood type is needed near you. Change how often in alert settings.' : 'You will start receiving alerts once you are verified and eligible. Change how often in alert settings.'}</p>
 		</section>
 
 		<section class="card flex flex-col gap-3 p-6">
 			<h2 class="text-lg font-bold">Need blood for someone?</h2>
 			<p class="text-[15px] leading-[22px] text-muted">Ask a medical facility to confirm and share a call for a patient you know. You do not need to be verified.</p>
-			<span class="btn-secondary !h-11 opacity-60" aria-disabled="true">Coming soon</span>
+			<a href="/request" class="btn-secondary !h-11">Make a donation appeal</a>
 		</section>
 	</div>
 </AccountShell>

@@ -6,7 +6,7 @@ This is the application, rebuilt step by step with reference to an earlier versi
 
 ## Stack
 
-Hono on Node (API), SvelteKit (web, later), Drizzle ORM on MariaDB, pnpm + Turborepo. Runs on a single Linux box behind Caddy.
+Hono on Node (API), SvelteKit (web), Drizzle ORM on MariaDB, pnpm + Turborepo. Runs on a single Linux box behind Caddy.
 
 ## Develop
 
@@ -24,4 +24,8 @@ Create a local database and a user that may also create `damulink_test_*` databa
 
 ## Status
 
-Done: foundations, phase 1 API (signup, login, tokens, /api/me, facility search, email verification, phone codes, password reset and change) and the phase 1 web screens (home, login, create account, forgot and reset password, verify email and phone), the donor dashboard, and the donor screens (donate or get tested, donor code, appointments, alert settings, reminders, profile). Mail and SMS are stand-ins (the dev server prints them; nothing is sent) until a provider is connected. Phase 3 is done: add or register a facility, its status page, the super admin review, attendants and invitations, the donor invite link and QR, the facility profile, and logging in with a facility code. Next: phase 4 (requests and calls).
+Built: accounts and sign-in, the donor account (donate or get tested, appointments, alerts, reminders, profile, calls for you), facilities (registration, review, team, invites, check-in, lab results, walk-ins, records), blood requests and calls with SMS alerts in rings, blood drives (share card, interest list, day tracker, summary and CSV), and the super admin area (verification queue, facilities, settings, super admins, audit log, misuse flags, dashboard).
+
+Mail and SMS are stand-ins in development (the server prints them; nothing is sent) until a provider is connected. Deploying: see `deploy/README.md`. Demo data for a server: `seed:demo` in `apps/api` (tagged so it never touches real records).
+
+Not built yet: withdrawing a yes from the app, the email alert channel, the facility-requests list for super admins, phone-width polish.
