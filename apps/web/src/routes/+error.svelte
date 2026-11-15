@@ -14,7 +14,7 @@
 	<a href="/" class="rounded-lg text-rose-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300"><Logo class="h-10" /></a>
 
 	<div class="relative flex items-center justify-center" style="width:224px;height:224px">
-		<svg aria-hidden="true" viewBox="0 0 24 24" fill="#E11D48" class="absolute inset-0 h-full w-full opacity-[.14]"><path d="M12 2.6c-3.9 4.7-6.4 8.2-6.4 11.3a6.4 6.4 0 0 0 12.8 0c0-3.1-2.5-6.6-6.4-11.3z" /></svg>
+		<svg aria-hidden="true" viewBox="0 0 24 24" fill="#E11D48" class="absolute inset-0 h-full w-full" style="opacity:.14"><path d="M12 2.6c-3.9 4.7-6.4 8.2-6.4 11.3a6.4 6.4 0 0 0 12.8 0c0-3.1-2.5-6.6-6.4-11.3z" /></svg>
 		<p class="relative mt-8 font-extrabold tracking-tight text-rose-600" style="font-size:64px;line-height:1">{code}</p>
 	</div>
 
