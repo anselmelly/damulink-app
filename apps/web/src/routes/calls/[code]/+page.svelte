@@ -59,12 +59,13 @@
 		{#if live}
 			<aside class="flex flex-col gap-3 lg:sticky lg:top-6">
 				<div class="relative overflow-hidden rounded-3xl bg-rose-600 p-6 text-white shadow-lg">
-					<div class="flex items-center justify-between"><span class="text-[26px] font-extrabold tracking-tight">{BRAND.name}</span>{#if c.urgency !== 'normal'}<span class="rounded-full bg-white px-4 py-1 text-[13px] font-extrabold uppercase tracking-widest text-red-700">{urgencyLabel(c.urgency)}</span>{/if}</div>
-					<p class="mt-2 text-[88px] font-extrabold leading-none">{c.bloodType}</p>
-					<p class="mt-5 text-[28px] font-extrabold leading-8">Blood needed</p>
-					<p class="mt-3 text-lg font-bold">{c.facility.name}, {c.facility.town}</p>
-					<p class="mt-2 text-[15px] leading-5 text-white/90">{c.publicText}</p>
-					<div class="mt-4 rounded-2xl bg-white px-4 py-4 text-center text-ink"><p class="text-[15px] font-semibold">Can you help? Please share, or open</p><p class="text-[26px] font-extrabold text-red-700">{link.replace(/^https?:\/\//, '')}</p></div>
+					<svg aria-hidden="true" viewBox="0 0 24 24" fill="#fff" class="pointer-events-none absolute -right-12 top-16 h-[330px] w-[270px] opacity-[.16]"><path d="M12 2.6c-3.9 4.7-6.4 8.2-6.4 11.3a6.4 6.4 0 0 0 12.8 0c0-3.1-2.5-6.6-6.4-11.3z" /></svg>
+					<div class="relative flex items-center justify-between"><span class="text-[26px] font-extrabold tracking-tight">{BRAND.name}</span>{#if c.urgency !== 'normal'}<span class="rounded-full bg-white px-4 py-1 text-[13px] font-extrabold uppercase tracking-widest text-red-700">{urgencyLabel(c.urgency)}</span>{/if}</div>
+					<p class="relative mt-2 text-[88px] font-extrabold leading-none">{c.bloodType}</p>
+					<p class="relative mt-5 text-[28px] font-extrabold leading-8">Blood needed</p>
+					<p class="relative mt-3 text-lg font-bold">{c.facility.name}, {c.facility.town}</p>
+					<p class="relative mt-2 text-[15px] leading-5 text-white/90">{c.publicText}</p>
+					<div class="relative mt-4 rounded-2xl bg-white px-4 py-4 text-center text-ink"><p class="text-[15px] font-semibold">Can you help? Please share, or open</p><p class="text-[26px] font-extrabold text-red-700">{link.replace(/^https?:\/\//, '')}</p></div>
 				</div>
 				<div class="grid grid-cols-2 gap-3">
 					<button type="button" onclick={copy} class="btn-secondary flex items-center justify-center gap-2"><Icon name="copy" class="h-5 w-5" />{copied ? 'Copied' : 'Copy link'}</button>
