@@ -25,7 +25,7 @@ export async function issueOtp(db: Db, userId: string, phone: string, now: Date,
 
 import type { User } from '@damu/db'
 import { hit } from '@damu/db'
-import type { AppEnv } from '../app'
+import { fixedCodeFor, type AppEnv } from '../app'
 import { otpMessage, verifyEmailMessage } from './messages'
 
 export const RESEND_EMAIL_COOLDOWN_MS = 60 * 1000
@@ -36,7 +36,7 @@ export async function startVerification(d: Deps, user: User, now: Date, opts: { 
 	await hit(d.db, `resend-email:${user.id}`, RESEND_EMAIL_COOLDOWN_MS, now) // the first email counts toward the resend wait
 	try {
 		if (!opts.skipEmail) await d.mailer.send(verifyEmailMessage(user.email, d.config.appUrl, await issueLinkToken(d.db, user.id, 'verify_email', now)))
-		await d.sms.send(otpMessage(user.phone, await issueOtp(d.db, user.id, user.phone, now, d.config.fixedOtp)))
+		await d.sms.send(otpMessage(user.phone, await issueOtp(d.db, user.id, user.phone, now, fixedCodeFor(d.config, user.phone))))
 	} catch (e) {
 		console.error('could not send verification messages', e instanceof Error ? e.message : 'unknown error')
 	}

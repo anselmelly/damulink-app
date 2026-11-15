@@ -16,7 +16,7 @@ import {
 	useOtp,
 } from '@damu/db'
 import { forgotInput, phoneSendInput, phoneVerifyInput, resetInput, verifyEmailInput } from '@damu/shared-types'
-import type { AppEnv } from '../app'
+import { fixedCodeFor, type AppEnv } from '../app'
 import { ApiError } from '../lib/errors'
 import { otpMessage, resetPasswordMessage, verifyEmailMessage } from '../lib/messages'
 import { hashPassword } from '../lib/password'
@@ -97,7 +97,7 @@ verificationRoutes.post('/phone/send', requireAuth, async (c: Context<AuthEnv>) 
 	if (last && now.getTime() - last.createdAt.getTime() < MIN) throw new ApiError(429, 'too_soon', 'Please wait a minute before asking for another code.')
 	if ((await countOtpsSince(db, user.id, new Date(now.getTime() - 60 * MIN))) >= MAX_SENDS_PER_HOUR) throw new ApiError(429, 'too_many_sends', 'Too many codes requested. Try again in an hour.')
 	if (phone && phone !== user.phone) await changePhone(db, user.id, phone)
-	await sms.send(otpMessage(target, await issueOtp(db, user.id, target, now, config.fixedOtp)))
+	await sms.send(otpMessage(target, await issueOtp(db, user.id, target, now, fixedCodeFor(config, target))))
 	return c.body(null, 204)
 })
 
